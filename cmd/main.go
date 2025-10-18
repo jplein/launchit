@@ -21,14 +21,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	entries, err := l.List()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error getting list of entries: %v", err)
-		os.Exit(1)
-	}
-
-	fmt.Printf("len(entries): %d\n", len(entries))
-
 	err = l.Write(os.Stdout)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error writing entries: %v", err)
