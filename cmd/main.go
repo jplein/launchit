@@ -8,6 +8,12 @@ import (
 	"github.com/jplein/launchit/pkg/common/source"
 )
 
+// TODO:
+// - Read from stdin, if available
+// - The second element in the single tab-separated line that should be available will be the ID
+// - Use the prefix of the ID to route to the right source
+// - Call Act() on the right source
+
 func main() {
 	sources, err := source.DefaultSourceSet()
 	if err != nil {
