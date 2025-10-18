@@ -1,0 +1,3 @@
+# Launchit
+
+Launcher for Linux
