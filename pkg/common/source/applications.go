@@ -26,6 +26,8 @@ func (a *Applications) List() ([]Entry, error) {
 		return nil, err
 	}
 
+	fmt.Fprintf(os.Stderr, "len(searchDirs): %d\n", len(searchDirs))
+
 	entries := getEntries(searchDirs)
 	return entries, nil
 }
@@ -51,6 +53,10 @@ func (a *Applications) Act(entry Entry) error {
 	}
 
 	return nil
+}
+
+func (a *Applications) Prefix() string {
+	return idPrefix
 }
 
 // Returns a list of directories in which to look for application .desktopp files
@@ -108,12 +114,14 @@ func getEntries(searchDirs []string) []Entry {
 	for _, dir := range searchDirs {
 		desktopFiles, err := getDesktopFiles(dir)
 		if err != nil {
+			fmt.Fprintf(os.Stderr, "%v\n", err)
 			continue
 		}
 
 		for _, desktopFile := range desktopFiles {
 			entry, err := getEntry(desktopFile)
 			if err != nil {
+				fmt.Fprintf(os.Stderr, "%v\n", err)
 				continue
 			}
 
@@ -146,7 +154,7 @@ func getEntry(desktopFile string) (Entry, error) {
 		return Entry{}, fmt.Errorf("error reading from %s: %w", desktopFile, err)
 	}
 
-	name := desktopFileEntry.Section("DesktopEnry").Key("Name").String()
+	name := desktopFileEntry.Section("Desktop Entry").Key("Name").String()
 	if name == "" {
 		return Entry{}, fmt.Errorf("error reading from %s: no Name found in [Desktop Entry] section", desktopFile)
 	}
