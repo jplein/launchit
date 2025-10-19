@@ -26,8 +26,6 @@ func (a *Applications) List() ([]Entry, error) {
 		return nil, err
 	}
 
-	fmt.Fprintf(os.Stderr, "len(searchDirs): %d\n", len(searchDirs))
-
 	entries := getEntries(searchDirs)
 	return entries, nil
 }
@@ -36,13 +34,15 @@ func (a *Applications) Name() string {
 	return sourceName
 }
 
-func (a *Applications) Act(entry Entry) error {
+func (a *Applications) Handle(entry Entry) error {
 	id := entry.ID
+	fmt.Fprintf(os.Stderr, "handling application with id %s\n", id)
+
 	if !strings.HasPrefix(id, idPrefix+":") {
 		return fmt.Errorf("not an application: %s", id)
 	}
 
-	filename := entry.ID[len(idPrefix)+1:]
+	filename := id[len(idPrefix)+1:]
 	if filename == "" {
 		return fmt.Errorf("not a valid ID: filename is empty: %s", id)
 	}
@@ -68,13 +68,11 @@ func getSearchDirs() ([]string, error) {
 	}
 
 	xdgDataDirsEntries := strings.Split(xdgDataDirs, ":")
-	searchDirs := make([]string, 0)
+	searchDirs := []string{path.Join(xdgDataHome, "applications")}
 
 	for _, entry := range xdgDataDirsEntries {
 		searchDirs = append(searchDirs, path.Join(entry, "applications"))
 	}
-
-	searchDirs = append(searchDirs, path.Join(xdgDataHome, "applications"))
 
 	return searchDirs, nil
 }
@@ -111,6 +109,8 @@ func getXDGDataHome() (string, error) {
 func getEntries(searchDirs []string) []Entry {
 	entries := make([]Entry, 0)
 
+	foundMap := make(map[string]bool)
+
 	for _, dir := range searchDirs {
 		desktopFiles, err := getDesktopFiles(dir)
 		if err != nil {
@@ -125,7 +125,10 @@ func getEntries(searchDirs []string) []Entry {
 				continue
 			}
 
-			entries = append(entries, entry)
+			if !foundMap[entry.Description] {
+				entries = append(entries, entry)
+				foundMap[entry.Description] = true
+			}
 		}
 	}
 
@@ -160,7 +163,7 @@ func getEntry(desktopFile string) (Entry, error) {
 	}
 
 	return Entry{
-		Description: fmt.Sprintf("%s - %s", name, desktopFile),
+		Description: name,
 		ID:          idPrefix + ":" + desktopFile,
 	}, nil
 }

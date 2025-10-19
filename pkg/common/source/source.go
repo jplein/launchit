@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 )
 
 type Entry struct {
@@ -11,10 +12,39 @@ type Entry struct {
 	ID          string
 }
 
+// Read an entry from a string. The string should contain a line with fields
+// separated by tabs. The first field is th edescription, and the second is the
+// ID. If the string contains more than one line, subsequent lines are ignored.
+// Returns an error if the first line does not contain a tab, or if either of
+// the two fields is empty.
+func EntryFromString(s string) (Entry, error) {
+	if len(s) == 0 {
+		return Entry{}, fmt.Errorf("error reading entry from string: string is empty")
+	}
+
+	lines := strings.Split(s, "\n")
+
+	firstLine := lines[0]
+	if len(firstLine) == 0 {
+		return Entry{}, fmt.Errorf("error reading entry from string: first line is empty")
+	}
+
+	fields := strings.Split(firstLine, "\t")
+	if len(fields) == 1 {
+		return Entry{}, fmt.Errorf("error reading entry from string: line does not contain a tab delimiter")
+	}
+
+	if len(fields) > 2 {
+		return Entry{}, fmt.Errorf("error reading entry from string: line contains more than one tab-delimted field")
+	}
+
+	return Entry{Description: fields[0], ID: fields[1]}, nil
+}
+
 type Source interface {
 	List() ([]Entry, error)
 	Name() string
-	Act(Entry) error
+	Handle(entry Entry) error
 	Prefix() string
 }
 
@@ -56,4 +86,15 @@ func DefaultSourceSet() (*SourceSet, error) {
 	appSource := &Applications{}
 
 	return NewSourceSet([]Source{appSource})
+}
+
+func (s *SourceSet) Handle(entry Entry) error {
+	id := entry.ID
+	for _, source := range s.Sources {
+		if strings.HasPrefix(id, source.Prefix()) {
+			return source.Handle(entry)
+		}
+	}
+
+	return fmt.Errorf("no handler found for %s", id)
 }
