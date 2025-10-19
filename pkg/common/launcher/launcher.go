@@ -49,6 +49,13 @@ func getLine(entry source.Entry) string {
 		strings.ReplaceAll(entry.Description, "\t", "    "),
 		strings.ReplaceAll(entry.ID, "\t", "    "),
 	)
+
+	if entry.Icon != "" {
+		icon := strings.ReplaceAll(entry.Icon, "\t", "")
+		str += "\000" + "icon" + "\x1f" + icon
+	}
+
 	str = strings.ReplaceAll(str, "\n", " ")
+
 	return str
 }

@@ -157,13 +157,21 @@ func getEntry(desktopFile string) (Entry, error) {
 		return Entry{}, fmt.Errorf("error reading from %s: %w", desktopFile, err)
 	}
 
-	name := desktopFileEntry.Section("Desktop Entry").Key("Name").String()
+	desktopSection := desktopFileEntry.Section("Desktop Entry")
+
+	name := desktopSection.Key("Name").String()
 	if name == "" {
 		return Entry{}, fmt.Errorf("error reading from %s: no Name found in [Desktop Entry] section", desktopFile)
+	}
+
+	icon := desktopSection.Key("Icon").String()
+	if icon == "" {
+		icon = "application-x-executable"
 	}
 
 	return Entry{
 		Description: name,
 		ID:          idPrefix + ":" + desktopFile,
+		Icon:        icon,
 	}, nil
 }

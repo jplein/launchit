@@ -10,6 +10,7 @@ import (
 type Entry struct {
 	Description string
 	ID          string
+	Icon        string
 }
 
 // Read an entry from a string. The string should contain a line with fields
