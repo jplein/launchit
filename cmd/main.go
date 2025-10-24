@@ -3,11 +3,11 @@ package main
 import (
 	"errors"
 	"flag"
-	"fmt"
 	"io"
 	"os"
 
 	"github.com/jplein/launchit/pkg/common/launcher"
+	"github.com/jplein/launchit/pkg/common/logger"
 	"github.com/jplein/launchit/pkg/common/source"
 )
 
@@ -21,10 +21,7 @@ func main() {
 	readLine := flag.Bool("read", false, "read a line from standard input and act on it")
 	flag.Parse()
 
-	fmt.Fprintf(os.Stderr, "readLine: %v\n", *readLine)
-
 	if *readLine {
-		fmt.Fprintf(os.Stderr, "readLine is true\n")
 		handleInput()
 	} else {
 		writeEntries()
@@ -34,19 +31,19 @@ func main() {
 func writeEntries() {
 	sources, err := source.DefaultSourceSet()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error getting launcher: %v", err)
+		logger.Log("error getting launcher: %v", err)
 		os.Exit(1)
 	}
 
 	l, err := launcher.NewLauncher(*sources)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error getting launcher: %v", err)
+		logger.Log("error getting launcher: %v", err)
 		os.Exit(1)
 	}
 
 	err = l.Write(os.Stdout)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error writing entries: %v", err)
+		logger.Log("error writing entries: %v", err)
 		os.Exit(1)
 	}
 }
@@ -54,30 +51,30 @@ func writeEntries() {
 func handleInput() {
 	input, err := readFromSTDIN()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error reading from standard input: %v\n", err)
+		logger.Log("error reading from standard input: %v\n", err)
 		return
 	}
 
 	if input == "" {
-		fmt.Fprintf(os.Stderr, "no input from standard input\n")
+		logger.Log("no input from standard input\n")
 		return
 	}
 
 	entry, err := source.EntryFromString(input)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
+		logger.Log("%s\n", err.Error())
 		os.Exit(1)
 	}
 
 	sources, err := source.DefaultSourceSet()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error getting launcher: %v", err)
+		logger.Log("error getting launcher: %v", err)
 		os.Exit(1)
 	}
 
 	err = sources.Handle(entry)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error handling entry ('%s', '%s'): %v", entry.Description, entry.ID, err)
+		logger.Log("error handling entry ('%s', '%s'): %v", entry.Description, entry.ID, err)
 		os.Exit(1)
 	}
 }
@@ -88,9 +85,9 @@ const bufSize = 1024 * 1024
 func readFromSTDIN() (string, error) {
 	buf := make([]byte, bufSize)
 
-	fmt.Fprintf(os.Stderr, "about to read from stdin\n")
+	logger.Log("about to read from stdin\n")
 	_, err := os.Stdin.Read(buf)
-	fmt.Fprintf(os.Stderr, "done reading from stdin\n")
+	logger.Log("done reading from stdin\n")
 
 	if err != nil && !errors.Is(err, io.EOF) {
 		return "", err

@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/jplein/launchit/pkg/common/desktop"
+	"github.com/jplein/launchit/pkg/common/logger"
 )
 
 type WindowList struct{}
@@ -39,8 +39,8 @@ func (w *WindowList) List() ([]Entry, error) {
 
 	windows := make([]niriWindowDescription, 0)
 	if err := json.Unmarshal(listBytes, &windows); err != nil {
-		fmt.Fprintf(os.Stderr, "niri window list JSON output:\n")
-		fmt.Fprintf(os.Stderr, string(listBytes))
+		logger.Log("niri window list JSON output:\n")
+		logger.Log(string(listBytes))
 		return nil, fmt.Errorf("error getting windows from Niri: error parsing JSON: %w", err)
 	}
 
@@ -49,7 +49,7 @@ func (w *WindowList) List() ([]Entry, error) {
 	for _, window := range windows {
 		desktopEntry, err := desktop.Get(window.AppID)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "error getting desktop entry %s: %w", window.AppID, err)
+			logger.Log("error getting desktop entry %s: %v\n", window.AppID, err)
 		}
 
 		icon := ""

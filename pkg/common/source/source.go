@@ -3,8 +3,9 @@ package source
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
+
+	"github.com/jplein/launchit/pkg/common/logger"
 )
 
 type Entry struct {
@@ -73,7 +74,7 @@ func (s *SourceSet) List() ([]Entry, error) {
 	for _, src := range s.Sources {
 		sourceEntries, err := src.List()
 		if err != nil {
-			fmt.Fprint(os.Stderr, err.Error())
+			logger.Log("%s\n", err.Error())
 			continue
 		}
 

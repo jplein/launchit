@@ -2,7 +2,6 @@ package source
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 	"strings"
 
@@ -41,8 +40,6 @@ func (a *Applications) Name() string {
 
 func (a *Applications) Handle(entry Entry) error {
 	id := entry.ID
-	fmt.Fprintf(os.Stderr, "handling application with id %s\n", id)
-
 	if !strings.HasPrefix(id, idPrefix+":") {
 		return fmt.Errorf("not an application: %s", id)
 	}

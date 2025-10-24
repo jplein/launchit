@@ -7,6 +7,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/jplein/launchit/pkg/common/logger"
 	"gopkg.in/ini.v1"
 )
 
@@ -33,14 +34,14 @@ func List() ([]App, error) {
 	for _, dir := range dirs {
 		files, err := getDesktopFiles(dir)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "error reading %s: %v\n", dir, err)
+			logger.Log("error reading %s: %v\n", dir, err)
 			continue
 		}
 
 		for _, file := range files {
 			app, err := getEntry(file)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "error reading desktop file %s: %v\n", file, err)
+				logger.Log("error reading desktop file %s: %v\n", file, err)
 				continue
 			}
 
