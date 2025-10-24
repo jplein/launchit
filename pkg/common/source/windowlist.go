@@ -32,7 +32,20 @@ func (w *WindowList) List() ([]Entry, error) {
 	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
+		if stdout.Len() > 0 {
+			logger.Log("niri windows stdout: %s\n", stdout.String())
+		}
+		if stderr.Len() > 0 {
+			logger.Log("niri windows stderr: %s\n", stderr.String())
+		}
 		return nil, fmt.Errorf("error getting windows from Niri: %w", err)
+	}
+
+	if stdout.Len() > 0 {
+		logger.Log("niri windows stdout: %s\n", stdout.String())
+	}
+	if stderr.Len() > 0 {
+		logger.Log("niri windows stderr: %s\n", stderr.String())
 	}
 
 	listBytes := stdout.Bytes()
@@ -107,7 +120,20 @@ func (w *WindowList) Handle(entry Entry) error {
 	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
+		if stdout.Len() > 0 {
+			logger.Log("niri focus-window stdout: %s\n", stdout.String())
+		}
+		if stderr.Len() > 0 {
+			logger.Log("niri focus-window stderr: %s\n", stderr.String())
+		}
 		return fmt.Errorf("error switching to window %s: %w", windowId, err)
+	}
+
+	if stdout.Len() > 0 {
+		logger.Log("niri focus-window stdout: %s\n", stdout.String())
+	}
+	if stderr.Len() > 0 {
+		logger.Log("niri focus-window stderr: %s\n", stderr.String())
 	}
 
 	return nil
