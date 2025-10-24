@@ -111,8 +111,10 @@ func (w *WindowList) Prefix() string {
 	return windowListPrefix
 }
 
+// TODO: This should be in a configuration file that can be edited without rebuilding the application
 var overrides = map[string]string{
 	"google-chrome": "com.google.Chrome",
+	"Code":          "vscode",
 }
 
 func getIconOverride(appID string) string {
