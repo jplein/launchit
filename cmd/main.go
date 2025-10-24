@@ -9,6 +9,7 @@ import (
 	"github.com/jplein/launchit/pkg/common/launcher"
 	"github.com/jplein/launchit/pkg/common/logger"
 	"github.com/jplein/launchit/pkg/common/source"
+	"github.com/jplein/launchit/pkg/common/state"
 )
 
 // TODO:
@@ -70,6 +71,11 @@ func handleInput() {
 	if err != nil {
 		logger.Log("error getting launcher: %v", err)
 		os.Exit(1)
+	}
+
+	err = state.Add(entry.ID)
+	if err != nil {
+		logger.Log("error writing recent entry %s: %v", entry.ID, err)
 	}
 
 	err = sources.Handle(entry)
