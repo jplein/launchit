@@ -1,32 +1,37 @@
 package source
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
 	"strings"
 
-	"gopkg.in/ini.v1"
+	"github.com/jplein/launchit/pkg/common/desktop"
 )
 
 type Applications struct{}
 
 const (
-	defaultXDGDataDirs = "/usr/local/share:/usr/share"
-	defaultXDGDataHome = "~/.local/share"
-	idPrefix           = "app"
-	sourceName         = "applications"
+	idPrefix   = "app"
+	sourceName = "applications"
 )
 
 func (a *Applications) List() ([]Entry, error) {
-	searchDirs, err := getSearchDirs()
+	apps, err := desktop.List()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error listing applications: %w", err)
 	}
 
-	entries := getEntries(searchDirs)
+	entries := make([]Entry, 0)
+	for _, app := range apps {
+		entry := Entry{
+			Description: app.Name,
+			Icon:        app.Icon,
+			ID:          idPrefix + ":" + app.Filename,
+		}
+		entries = append(entries, entry)
+	}
+
 	return entries, nil
 }
 
@@ -57,121 +62,4 @@ func (a *Applications) Handle(entry Entry) error {
 
 func (a *Applications) Prefix() string {
 	return idPrefix
-}
-
-// Returns a list of directories in which to look for application .desktopp files
-func getSearchDirs() ([]string, error) {
-	xdgDataDirs := getXDGDataDirs()
-	xdgDataHome, err := getXDGDataHome()
-	if err != nil {
-		return nil, err
-	}
-
-	xdgDataDirsEntries := strings.Split(xdgDataDirs, ":")
-	searchDirs := []string{path.Join(xdgDataHome, "applications")}
-
-	for _, entry := range xdgDataDirsEntries {
-		searchDirs = append(searchDirs, path.Join(entry, "applications"))
-	}
-
-	return searchDirs, nil
-}
-
-func getXDGDataDirs() string {
-	xdgDataDirs := os.Getenv("XDG_DATA_DIRS")
-	if xdgDataDirs == "" {
-		xdgDataDirs = defaultXDGDataDirs
-	}
-
-	return xdgDataDirs
-}
-
-func getXDGDataHome() (string, error) {
-	var xdgDataHome string
-
-	home := os.Getenv("HOME")
-	if home == "" {
-		return "", errors.New("erorr getting home directory: HOME environment variable not set")
-	}
-
-	xdgDataHome = os.Getenv("XDG_DATA_HOME")
-	if xdgDataHome == "" {
-		xdgDataHome = defaultXDGDataHome
-	}
-
-	if strings.HasPrefix(xdgDataHome, "~") {
-		xdgDataHome = home + xdgDataHome[1:]
-	}
-
-	return xdgDataHome, nil
-}
-
-func getEntries(searchDirs []string) []Entry {
-	entries := make([]Entry, 0)
-
-	foundMap := make(map[string]bool)
-
-	for _, dir := range searchDirs {
-		desktopFiles, err := getDesktopFiles(dir)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "%v\n", err)
-			continue
-		}
-
-		for _, desktopFile := range desktopFiles {
-			entry, err := getEntry(desktopFile)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "%v\n", err)
-				continue
-			}
-
-			if !foundMap[entry.Description] {
-				entries = append(entries, entry)
-				foundMap[entry.Description] = true
-			}
-		}
-	}
-
-	return entries
-}
-
-func getDesktopFiles(dir string) ([]string, error) {
-	dirEntries, err := os.ReadDir(dir)
-	if err != nil {
-		return nil, fmt.Errorf("error reading %s: %w", dir, err)
-	}
-
-	desktopFiles := make([]string, 0)
-	for _, entry := range dirEntries {
-		if strings.HasSuffix(entry.Name(), ".desktop") {
-			desktopFiles = append(desktopFiles, path.Join(dir, entry.Name()))
-		}
-	}
-
-	return desktopFiles, nil
-}
-
-func getEntry(desktopFile string) (Entry, error) {
-	desktopFileEntry, err := ini.Load(desktopFile)
-	if err != nil {
-		return Entry{}, fmt.Errorf("error reading from %s: %w", desktopFile, err)
-	}
-
-	desktopSection := desktopFileEntry.Section("Desktop Entry")
-
-	name := desktopSection.Key("Name").String()
-	if name == "" {
-		return Entry{}, fmt.Errorf("error reading from %s: no Name found in [Desktop Entry] section", desktopFile)
-	}
-
-	icon := desktopSection.Key("Icon").String()
-	if icon == "" {
-		icon = "application-x-executable"
-	}
-
-	return Entry{
-		Description: name,
-		ID:          idPrefix + ":" + desktopFile,
-		Icon:        icon,
-	}, nil
 }
