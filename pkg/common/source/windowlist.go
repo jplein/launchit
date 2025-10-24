@@ -107,7 +107,7 @@ func (w *WindowList) Handle(entry Entry) error {
 	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("error switching to window %d: %w", windowId, err)
+		return fmt.Errorf("error switching to window %s: %w", windowId, err)
 	}
 
 	return nil

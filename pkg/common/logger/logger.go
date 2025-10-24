@@ -3,7 +3,8 @@ package logger
 import (
 	"fmt"
 	"os"
-	"path"
+
+	"github.com/jplein/launchit/pkg/common/state/locations"
 )
 
 func Log(format string, a ...any) {
@@ -24,10 +25,7 @@ var (
 )
 
 const (
-	// relative to the home directory
-	defaultXDGDataHome = ".local/state"
-	appName            = "launchit"
-	baseLogFilename    = "launchit.log"
+	baseLogFilename = "launchit.log"
 )
 
 func getLogFile() (string, error) {
@@ -35,25 +33,11 @@ func getLogFile() (string, error) {
 		return logFile, nil
 	}
 
-	xdgDataHome := os.Getenv("XDG_DATA_HOME")
-	if xdgDataHome == "" {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return "", fmt.Errorf("error getting log file location: %w", err)
-		}
-
-		xdgDataHome = path.Join(home, defaultXDGDataHome)
+	logFile, err := locations.LogFilename()
+	if err != nil {
+		return "", fmt.Errorf("erorr getting log file: %w", err)
 	}
 
-	logDirectory := path.Join(xdgDataHome, appName)
-
-	fmt.Fprintf(os.Stderr, "logger: logDirectory: %s\n", logDirectory)
-	if err := os.MkdirAll(logDirectory, 0o755); err != nil {
-		return "", fmt.Errorf("error getting log file location: error creating directory: %w", err)
-	}
-
-	logFile = path.Join(logDirectory, baseLogFilename)
-	fmt.Fprintf(os.Stderr, "logger: logFile: %s\n", logFile)
 	return logFile, nil
 }
 
