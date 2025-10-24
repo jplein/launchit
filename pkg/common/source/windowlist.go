@@ -63,17 +63,13 @@ func (w *WindowList) List() ([]Entry, error) {
 		}
 
 		// Attempt to get the name from the desktop entry, if we can find it. Otherwise, leave it blank.
-		name := ""
+		name := window.AppID
 		if desktopEntry != nil {
 			name = desktopEntry.Name
-
-			if name != "" {
-				name = fmt.Sprintf(" (%s)", name)
-			}
 		}
 
 		entry := Entry{
-			Description: fmt.Sprintf("%s%s", window.Title, name),
+			Description: fmt.Sprintf("%s (%s)", window.Title, name),
 			ID:          windowListPrefix + ":" + fmt.Sprintf("%d", window.ID),
 			Icon:        icon,
 		}
