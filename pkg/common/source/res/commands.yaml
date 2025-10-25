@@ -60,3 +60,8 @@
     - msg
     - action
     - focus-workspace-down
+- id: "switch-to-window"
+  description: "Switch to window"
+  # TODO: Find a way to avoid hard-coding this entire path
+  executable: "/home/jplein/Git/jplein/launchit/launchit-wrapper-rofi-windows-only.sh"
+  args: []
