@@ -1,0 +1,62 @@
+# Definitions of commands to add to the menu
+#
+# Each entry has these properties:
+# - id: A unique string to identify this command
+# - description: A string describing the command. This is how the command will
+#   appear in the menu.
+# - executable, args: The executable and arguments to run. You cannot specify
+#   the working directory or environment variables in this file; if those are
+#   necessary, use a wrapper script.
+
+- id: "maximize-column"
+  description: "Niri: Maximize column"
+  executable: niri
+  args:
+    - msg
+    - action
+    - maximize-column
+- id: "third-width"
+  description: "Niri: Size column to one third the width of the display"
+  executable: niri
+  args:
+    - msg
+    - action
+    - set-window-width
+    - "33%"
+- id: "half-width"
+  description: "Niri: Size column to half the width of the display"
+  executable: niri
+  args:
+    - msg
+    - action
+    - set-window-width
+    - "50%"
+- id: "two-thirds-width"
+  description: "Niri: Size column to two-thirds the width of the display"
+  executable: niri
+  args:
+    - msg
+    - action
+    - set-window-width
+    - "67%"
+- id: "overview"
+  description: "Niri: Open the overview"
+  executable: niri
+  args:
+    - msg
+    - action
+    - open-overview
+- id: "focus-workspace-up"
+  description: "Niri: Focus workspace up"
+  executable: niri
+  args:
+    - msg
+    - action
+    - focus-workspace-up
+- id: "focus-workspace-down"
+  description: "Niri: Focus workspace down"
+  executable: niri
+  args:
+    - msg
+    - action
+    - focus-workspace-down

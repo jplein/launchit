@@ -87,8 +87,9 @@ func (s *SourceSet) List() ([]Entry, error) {
 func DefaultSourceSet() (*SourceSet, error) {
 	appSource := &Applications{}
 	windowsSource := &WindowList{}
+	commandsSource := &Commands{}
 
-	return NewSourceSet([]Source{appSource, windowsSource})
+	return NewSourceSet([]Source{appSource, windowsSource, commandsSource})
 }
 
 func (s *SourceSet) Handle(entry Entry) error {
