@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"flag"
 	"io"
 	"os"
 
@@ -19,13 +18,26 @@ import (
 // - Call Act() on the right source
 
 func main() {
-	readLine := flag.Bool("read", false, "read a line from standard input and act on it")
-	flag.Parse()
+	args := os.Args[1:]
 
-	if *readLine {
-		handleInput()
-	} else {
+	if len(args) == 0 {
 		writeEntries()
+		return
+	}
+
+	subcommand := "write"
+	if len(args) >= 1 {
+		subcommand = args[0]
+	}
+
+	switch subcommand {
+	case "read":
+		handleInput()
+	case "write":
+		writeEntries()
+	default:
+		logger.Log("unknown subcommand: %s\n", subcommand)
+		os.Exit(1)
 	}
 }
 
