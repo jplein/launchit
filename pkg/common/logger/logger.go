@@ -51,7 +51,7 @@ func getLogFilehandle() (*os.File, error) {
 		return nil, err
 	}
 
-	fh, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	fh, err := os.OpenFile(file, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		return nil, err
 	}
