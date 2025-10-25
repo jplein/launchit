@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"io"
 	"os"
 
@@ -21,7 +22,7 @@ func main() {
 	args := os.Args[1:]
 
 	if len(args) == 0 {
-		writeEntries()
+		writeEntries(args)
 		return
 	}
 
@@ -34,18 +35,43 @@ func main() {
 	case "read":
 		handleInput()
 	case "write":
-		writeEntries()
+		writeEntries(args[1:])
 	default:
 		logger.Log("unknown subcommand: %s\n", subcommand)
 		os.Exit(1)
 	}
 }
 
-func writeEntries() {
+func writeEntries(args []string) {
+	fs := flag.NewFlagSet("write", flag.ExitOnError)
+	src := fs.String("source", "", "source to pull entries from")
+	fs.Parse(args)
+
 	sources, err := source.DefaultSourceSet()
 	if err != nil {
 		logger.Log("error getting launcher: %v", err)
 		os.Exit(1)
+	}
+
+	logger.Log("debug: *src: %s\n", *src)
+
+	if *src != "" {
+		foundSource := false
+
+		for _, s := range sources.Sources {
+			if s.Name() == *src {
+				sources, err = source.NewSourceSet([]source.Source{s})
+				if err != nil {
+					logger.Log("error getting launcher: %v\n", err)
+					os.Exit(1)
+				}
+				foundSource = true
+			}
+		}
+
+		if !foundSource {
+			logger.Log("error getting launcher: no source with name %s\n", *src)
+		}
 	}
 
 	l, err := launcher.NewLauncher(*sources)
