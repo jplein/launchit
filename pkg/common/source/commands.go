@@ -13,7 +13,7 @@ import (
 const (
 	commandsSourceName = "commands"
 	commandPrefix      = "command"
-	commandDefaultIcon = "system-run"
+	commandDefaultIcon = "applications-system-symbolic"
 )
 
 type command struct {

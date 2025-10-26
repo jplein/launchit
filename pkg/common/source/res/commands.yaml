@@ -16,6 +16,7 @@
     - msg
     - action
     - maximize-column
+  icon: view-fullscreen-symbolic
 - id: "third-width"
   description: "Niri: Size column to one third the width of the display"
   executable: niri
@@ -24,6 +25,7 @@
     - action
     - set-window-width
     - "33%"
+  icon: sidebar-show-symbolic
 - id: "half-width"
   description: "Niri: Size column to half the width of the display"
   executable: niri
@@ -32,6 +34,7 @@
     - action
     - set-window-width
     - "50%"
+  icon: view-dual-symbolic
 - id: "two-thirds-width"
   description: "Niri: Size column to two-thirds the width of the display"
   executable: niri
@@ -40,6 +43,7 @@
     - action
     - set-window-width
     - "67%"
+  icon: sidebar-show-right-symbolic
 - id: "overview"
   description: "Niri: Open the overview"
   executable: niri
@@ -47,6 +51,7 @@
     - msg
     - action
     - open-overview
+  icon: view-grid-symbolic
 - id: "focus-workspace-up"
   description: "Niri: Focus workspace up"
   executable: niri
@@ -54,6 +59,7 @@
     - msg
     - action
     - focus-workspace-up
+  icon: go-up-symbolic
 - id: "focus-workspace-down"
   description: "Niri: Focus workspace down"
   executable: niri
@@ -61,6 +67,7 @@
     - msg
     - action
     - focus-workspace-down
+  icon: go-down-symbolic
 - id: "switch-to-window"
   description: "Switch to window"
   # TODO: Find a way to avoid hard-coding this entire path
