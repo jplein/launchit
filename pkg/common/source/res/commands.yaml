@@ -16,7 +16,7 @@
     - msg
     - action
     - maximize-column
-  icon: view-fullscreen-symbolic
+  icon: view-fullscreen-symbolic-fill
 - id: "third-width"
   description: "Niri: Size column to one third the width of the display"
   executable: niri
@@ -25,7 +25,7 @@
     - action
     - set-window-width
     - "33%"
-  icon: sidebar-show-symbolic
+  icon: sidebar-show-symbolic-fill
 - id: "half-width"
   description: "Niri: Size column to half the width of the display"
   executable: niri
@@ -34,7 +34,7 @@
     - action
     - set-window-width
     - "50%"
-  icon: view-dual-symbolic
+  icon: view-dual-symbolic-fill
 - id: "two-thirds-width"
   description: "Niri: Size column to two-thirds the width of the display"
   executable: niri
@@ -43,7 +43,7 @@
     - action
     - set-window-width
     - "67%"
-  icon: sidebar-show-right-symbolic
+  icon: sidebar-show-right-symbolic-fill
 - id: "overview"
   description: "Niri: Open the overview"
   executable: niri
@@ -51,7 +51,7 @@
     - msg
     - action
     - open-overview
-  icon: view-grid-symbolic
+  icon: view-grid-symbolic-fill
 - id: "focus-workspace-up"
   description: "Niri: Focus workspace up"
   executable: niri
@@ -59,7 +59,7 @@
     - msg
     - action
     - focus-workspace-up
-  icon: go-up-symbolic
+  icon: go-up-symbolic-fill
 - id: "focus-workspace-down"
   description: "Niri: Focus workspace down"
   executable: niri
@@ -67,9 +67,10 @@
     - msg
     - action
     - focus-workspace-down
-  icon: go-down-symbolic
+  icon: go-down-symbolic-fill
 - id: "switch-to-window"
   description: "Switch to window"
   # TODO: Find a way to avoid hard-coding this entire path
   executable: "/home/jplein/Git/jplein/launchit/launchit-wrapper-rofi-windows-only.sh"
   args: []
+  icon: applications-system-symbolic-fill
