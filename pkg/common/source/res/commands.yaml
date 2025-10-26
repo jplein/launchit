@@ -7,6 +7,7 @@
 # - executable, args: The executable and arguments to run. You cannot specify
 #   the working directory or environment variables in this file; if those are
 #   necessary, use a wrapper script.
+# - icon: The icon to use. If missing or empty, defaults to "system-run"
 
 - id: "maximize-column"
   description: "Niri: Maximize column"

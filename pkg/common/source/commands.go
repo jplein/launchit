@@ -13,6 +13,7 @@ import (
 const (
 	commandsSourceName = "commands"
 	commandPrefix      = "command"
+	commandDefaultIcon = "system-run"
 )
 
 type command struct {
@@ -20,6 +21,7 @@ type command struct {
 	Args        []string `yaml:"args"`
 	ID          string   `yaml:"id"`
 	Description string   `yaml:"description"`
+	Icon        string   `yaml:"icon"`
 }
 
 //go:embed res/commands.yaml
@@ -39,6 +41,10 @@ func (c *Commands) List() ([]Entry, error) {
 		entry := Entry{
 			Description: command.Description,
 			ID:          commandPrefix + ":" + command.ID,
+			Icon:        command.Icon,
+		}
+		if entry.Icon == "" {
+			entry.Icon = commandDefaultIcon
 		}
 
 		entries = append(entries, entry)
