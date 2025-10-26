@@ -8,6 +8,10 @@
 #   the working directory or environment variables in this file; if those are
 #   necessary, use a wrapper script.
 # - icon: The icon to use. If missing or empty, defaults to "system-run"
+#
+# The icons in this file that end in "-fill.svg" have had their fill color
+# rewritten by the "rewrite-svg-fill-color" tool in dotfiles, and are found in
+# ~/.local/share/icons/Adwaita.
 
 - id: "maximize-column"
   description: "Niri: Maximize column"
