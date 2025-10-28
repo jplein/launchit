@@ -78,3 +78,35 @@
   executable: "/home/jplein/Git/jplein/launchit/launchit-wrapper-rofi-windows-only.sh"
   args: []
   icon: applications-system-symbolic-fill
+- id: "power-sleep"
+  description: "Sleep"
+  executable: "/bin/bash"
+  args:
+    - '-c'
+    - 'swaylock -f && systemctl suspend'
+  icon: system-shutdown-symbolic-fill
+- id: "lock"
+  description: "Lock screen"
+  executable: "swaylock"
+  args: []
+  icon: applications-system-symbolic-fill
+- id: "power-restart"
+  description: "Restart"
+  executable: "systemctl"
+  args:
+    - reboot
+  icon: system-reboot-symbolic-fill
+- id: "power-shutdown"
+  description: "Shutdown"
+  executable: "systemctl"
+  args:
+    - halt
+  icon: system-shutdown-symbolic-fill
+- id: "logout"
+  description: "Logout"
+  executable: "niri"
+  args:
+    - msg
+    - action
+    - quit
+  icon: system-log-out-symbolic-fill
