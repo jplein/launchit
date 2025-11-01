@@ -116,6 +116,8 @@ func getDescription(entry source.Entry, columns []string, widths []int) string {
 			part = cleanDescriptionPart(entry.Description)
 		case colType:
 			part = cleanDescriptionPart(entry.Type)
+		case "":
+			part = cleanDescriptionPart(entry.Description)
 		default:
 			logger.Log("unknown column type: %s\n", col)
 			part = ""
@@ -150,11 +152,5 @@ func ValidColumnNames() []string {
 }
 
 func IsValidColumnName(s string) bool {
-	for _, validName := range ValidColumnNames() {
-		if s == validName {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(ValidColumnNames(), s)
 }
