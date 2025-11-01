@@ -60,14 +60,14 @@ func (l *Launcher) List() ([]source.Entry, error) {
 	return entries, nil
 }
 
-func (l *Launcher) Write(writer io.Writer) error {
+func (l *Launcher) Write(writer io.Writer, columns []string, widths []int) error {
 	entries, err := l.List()
 	if err != nil {
 		return err
 	}
 
 	for _, entry := range entries {
-		_, err := writer.Write([]byte(getLine(entry) + "\n"))
+		_, err := writer.Write([]byte(getLine(entry, columns, widths) + "\n"))
 		if err != nil {
 			return fmt.Errorf("error writing entries: %w", err)
 		}
@@ -76,10 +76,10 @@ func (l *Launcher) Write(writer io.Writer) error {
 	return nil
 }
 
-func getLine(entry source.Entry) string {
+func getLine(entry source.Entry, columns []string, widths []int) string {
 	str := fmt.Sprintf(
 		"%s\t%s",
-		strings.ReplaceAll(entry.Description, "\t", "    "),
+		getDescription(entry, columns, widths),
 		strings.ReplaceAll(entry.ID, "\t", "    "),
 	)
 
@@ -91,4 +91,65 @@ func getLine(entry source.Entry) string {
 	str = strings.ReplaceAll(str, "\n", " ")
 
 	return str
+}
+
+func getDescription(entry source.Entry, columns []string, widths []int) string {
+	logger.Log("getDescription: columns: %v, widths: %v\n", columns, widths)
+
+	descCleaned := strings.ReplaceAll(entry.Description, "\t", "    ")
+
+	if len(columns) == 0 {
+		return descCleaned
+	}
+
+	parts := make([]string, 0)
+
+	for i, col := range columns {
+		part := ""
+		width := 0
+		if len(widths) > i {
+			width = widths[i]
+		}
+
+		switch col {
+		case colName:
+			part = cleanDescriptionPart(entry.Description)
+		case colType:
+			part = cleanDescriptionPart(entry.Type)
+		default:
+			logger.Log("unknown column type: %s\n", col)
+			part = ""
+		}
+
+		if width > 0 {
+			part = fmt.Sprintf("%-*.*s", width, width, part)
+		}
+
+		parts = append(parts, part)
+	}
+
+	return strings.Join(parts, " ")
+}
+
+func cleanDescriptionPart(s string) string {
+	return strings.ReplaceAll(s, "\t", "    ")
+}
+
+const (
+	colName = "name"
+	colType = "type"
+)
+
+func ValidColumnNames() []string {
+	return []string{colName, colType}
+}
+
+func IsValidColumnName(s string) bool {
+	for _, validName := range ValidColumnNames() {
+		if s == validName {
+			return true
+		}
+	}
+
+	return false
 }

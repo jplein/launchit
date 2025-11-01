@@ -5,6 +5,8 @@ import (
 	"flag"
 	"io"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/jplein/launchit/pkg/common/launcher"
 	"github.com/jplein/launchit/pkg/common/logger"
@@ -44,7 +46,10 @@ func main() {
 
 func writeEntries(args []string) {
 	fs := flag.NewFlagSet("write", flag.ExitOnError)
-	src := fs.String("source", "", "source to pull entries from")
+	src := fs.String("source", "", "Source to pull entries from")
+	columns := fs.String("columns", "", "Comma-separated list of one or more of name,type. Default vaule is 'name'.")
+	widths := fs.String("widths", "", "Comma-separated list of lengths. Defaults to 0, or no specified width.")
+
 	fs.Parse(args)
 
 	sources, err := source.DefaultSourceSet()
@@ -52,8 +57,6 @@ func writeEntries(args []string) {
 		logger.Log("error getting launcher: %v", err)
 		os.Exit(1)
 	}
-
-	logger.Log("debug: *src: %s\n", *src)
 
 	if *src != "" {
 		foundSource := false
@@ -74,13 +77,42 @@ func writeEntries(args []string) {
 		}
 	}
 
+	columnNames := strings.Split(*columns, ",")
+	for _, c := range columnNames {
+		if len(c) > 0 && !launcher.IsValidColumnName(c) {
+			logger.Log("Unknown column name '%s', valid values are %s\n", c, strings.Join(launcher.ValidColumnNames(), ", "))
+			os.Exit(1)
+		}
+	}
+
+	widthStrings := strings.Split(*widths, ",")
+	widthInts := make([]int, 0)
+	for _, s := range widthStrings {
+		if s == "" {
+			continue // Skip an empty string
+		}
+
+		w, err := strconv.ParseInt(s, 10, 8)
+		if err != nil {
+			logger.Log("error reading width entry '%s' as an integer: %v", s, err)
+			os.Exit(1)
+		}
+
+		if w < 0 {
+			logger.Log("width entry '%s' is invalid, expected a positive number", s)
+			os.Exit(1)
+		}
+
+		widthInts = append(widthInts, int(w))
+	}
+
 	l, err := launcher.NewLauncher(*sources)
 	if err != nil {
 		logger.Log("error getting launcher: %v", err)
 		os.Exit(1)
 	}
 
-	err = l.Write(os.Stdout)
+	err = l.Write(os.Stdout, columnNames, widthInts)
 	if err != nil {
 		logger.Log("error writing entries: %v", err)
 		os.Exit(1)

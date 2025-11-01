@@ -14,8 +14,8 @@ import (
 type WindowList struct{}
 
 const (
-	windowListBufSize    = 16 * 1024 * 1024
 	windowListSourceName = "windows"
+	windowListSourceType = "Window"
 	windowListPrefix     = "window"
 )
 
@@ -85,6 +85,7 @@ func (w *WindowList) List() ([]Entry, error) {
 			Description: fmt.Sprintf("%s (%s)", window.Title, name),
 			ID:          windowListPrefix + ":" + fmt.Sprintf("%d", window.ID),
 			Icon:        icon,
+			Type:        windowListSourceType,
 		}
 		entries = append(entries, entry)
 	}

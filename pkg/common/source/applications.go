@@ -11,8 +11,9 @@ import (
 type Applications struct{}
 
 const (
-	idPrefix   = "app"
-	sourceName = "applications"
+	idPrefix      = "app"
+	appSourceName = "applications"
+	appSourceType = "Application"
 )
 
 func (a *Applications) List() ([]Entry, error) {
@@ -27,6 +28,7 @@ func (a *Applications) List() ([]Entry, error) {
 			Description: app.Name,
 			Icon:        app.Icon,
 			ID:          idPrefix + ":" + app.Filename,
+			Type:        appSourceType,
 		}
 		entries = append(entries, entry)
 	}
@@ -35,7 +37,7 @@ func (a *Applications) List() ([]Entry, error) {
 }
 
 func (a *Applications) Name() string {
-	return sourceName
+	return appSourceName
 }
 
 func (a *Applications) Handle(entry Entry) error {

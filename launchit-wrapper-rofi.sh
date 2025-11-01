@@ -1,2 +1,2 @@
 #!/bin/bash
-"$(dirname "$0")/launchit" | rofi -dmenu -normal-window -display-columns 1 | "$(dirname "$0")/launchit" read
+"$(dirname "$0")/launchit" write --columns=name,type --widths=69,11 | rofi -dmenu -normal-window -display-columns 1 | "$(dirname "$0")/launchit" read

@@ -12,6 +12,7 @@ import (
 
 const (
 	commandsSourceName = "commands"
+	commandsSourceType = "Command"
 	commandPrefix      = "command"
 	commandDefaultIcon = "applications-system-symbolic"
 )
@@ -42,6 +43,7 @@ func (c *Commands) List() ([]Entry, error) {
 			Description: command.Description,
 			ID:          commandPrefix + ":" + command.ID,
 			Icon:        command.Icon,
+			Type:        commandsSourceType,
 		}
 		if entry.Icon == "" {
 			entry.Icon = commandDefaultIcon
