@@ -124,10 +124,8 @@ func getDescription(entry source.Entry, columns []string, widths []int) string {
 		if width > 0 {
 			runes := []rune(part)
 			if len(runes) > width {
-				// Truncate to width-1 and append ellipsis
 				part = string(runes[:width-1]) + "…"
 			} else {
-				// Pad to width if shorter
 				part = fmt.Sprintf("%-*s", width, part)
 			}
 		}
