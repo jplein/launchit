@@ -72,6 +72,14 @@
     - action
     - focus-workspace-down
   icon: go-down-symbolic-fill
+- id: "center-column"
+  description: "Niri: Center the active column"
+  executable: niri
+  args:
+    - msg
+    - action
+    - center-column 
+  icon: format-justify-center-symbolic-fill
 - id: "switch-to-window"
   description: "Switch to window"
   # TODO: Find a way to avoid hard-coding this entire path
