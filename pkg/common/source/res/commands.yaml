@@ -73,7 +73,7 @@
     - focus-workspace-down
   icon: go-down-symbolic-fill
 - id: "center-column"
-  description: "Niri: Center the active column"
+  description: "Niri: Center column"
   executable: niri
   args:
     - msg
