@@ -29,6 +29,8 @@ func List() ([]App, error) {
 		return nil, err
 	}
 
+	found := make(map[string]bool)
+
 	apps := make([]App, 0)
 
 	for _, dir := range dirs {
@@ -45,7 +47,11 @@ func List() ([]App, error) {
 				continue
 			}
 
-			apps = append(apps, app)
+			if !found[app.Name] {
+				apps = append(apps, app)
+			}
+
+			found[app.Name] = true
 		}
 	}
 

@@ -94,8 +94,6 @@ func getLine(entry source.Entry, columns []string, widths []int) string {
 }
 
 func getDescription(entry source.Entry, columns []string, widths []int) string {
-	logger.Log("getDescription: columns: %v, widths: %v\n", columns, widths)
-
 	descCleaned := strings.ReplaceAll(entry.Description, "\t", "    ")
 
 	if len(columns) == 0 {
