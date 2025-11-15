@@ -91,11 +91,11 @@
   executable: "/bin/bash"
   args:
     - '-c'
-    - 'swaylock -f && systemctl suspend'
+    - 'hyprlock && systemctl suspend'
   icon: system-shutdown-symbolic-fill
 - id: "lock"
   description: "Lock screen"
-  executable: "swaylock"
+  executable: "hyprlock"
   args: []
   icon: applications-system-symbolic-fill
 - id: "power-restart"
