@@ -3,6 +3,7 @@ package logger
 import (
 	"fmt"
 	"os"
+	"path"
 
 	"github.com/jplein/launchit/pkg/common/state/locations"
 )
@@ -49,6 +50,12 @@ func getLogFilehandle() (*os.File, error) {
 	file, err := getLogFile()
 	if err != nil {
 		return nil, err
+	}
+
+	logDir := path.Dir(file)
+	if err = os.MkdirAll(logDir, 0o744); err != nil {
+		return nil, fmt.Errorf("error opening log file %s: erorr creating directory %s: %w",
+			file, logDir, err)
 	}
 
 	fh, err := os.OpenFile(file, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0o644)
