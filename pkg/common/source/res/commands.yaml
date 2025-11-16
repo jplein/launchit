@@ -88,10 +88,9 @@
   icon: applications-system-symbolic-fill
 - id: "power-sleep"
   description: "Sleep"
-  executable: "bash"
+  executable: "systemctl"
   args:
-    - '-c'
-    - 'hyprlock & systemctl suspend'
+    - suspend
   icon: system-shutdown-symbolic-fill
 - id: "lock"
   description: "Lock screen"
