@@ -36,7 +36,6 @@ func List() ([]App, error) {
 	for _, dir := range dirs {
 		files, err := getDesktopFiles(dir)
 		if err != nil {
-			logger.Log("error reading %s: %v\n", dir, err)
 			continue
 		}
 
@@ -150,6 +149,7 @@ func getXDGDataHome() (string, error) {
 func getDesktopFiles(dir string) ([]string, error) {
 	dirEntries, err := os.ReadDir(dir)
 	if err != nil {
+		// TODO: add a mechanism to enable verbose logging, only log here if verbose logging is enabled
 		return nil, fmt.Errorf("error reading %s: %w", dir, err)
 	}
 

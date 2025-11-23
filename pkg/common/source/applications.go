@@ -2,10 +2,13 @@ package source
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
+	"syscall"
 
 	"github.com/jplein/launchit/pkg/common/desktop"
+	"gopkg.in/ini.v1"
 )
 
 type Applications struct{}
@@ -51,9 +54,36 @@ func (a *Applications) Handle(entry Entry) error {
 		return fmt.Errorf("not a valid ID: filename is empty: %s", id)
 	}
 
-	cmd := exec.Command("gio", "launch", filename)
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to launch application %s: %w", filename, err)
+	desktopFileEntry, err := ini.Load(filename)
+	if err != nil {
+		return fmt.Errorf("error parsing %s as an ini file: %w", err)
+	}
+
+	desktopSection := desktopFileEntry.Section("Desktop Entry")
+
+	cmd := desktopSection.Key("Exec").String()
+	if cmd == "" {
+		return fmt.Errorf("error getting command from %s: no Exec line found", filename)
+	}
+
+	// Remove any positional arguments (like %U)
+	fieldCodes := []string{"%f", "%F", "%u", "%U", "%i", "%c", "%k", "%d", "%D", "%n", "%N", "%v", "%m"}
+	for _, code := range fieldCodes {
+		cmd = strings.ReplaceAll(cmd, code, "")
+	}
+	cmd = strings.TrimSpace(cmd)
+
+	sh, err := exec.LookPath("sh")
+	if err != nil {
+		return fmt.Errorf("error starting application: could not find sh in the PATH")
+	}
+
+	env := os.Environ()
+
+	args := []string{sh, "-c", cmd}
+	err = syscall.Exec(sh, args, env)
+	if err != nil {
+		return fmt.Errorf("error starting application: error executing %s with arguments %v: %w", sh, args, err)
 	}
 
 	return nil
