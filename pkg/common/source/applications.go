@@ -78,6 +78,12 @@ func (a *Applications) Handle(entry Entry) error {
 		return fmt.Errorf("error starting application: could not find sh in the PATH")
 	}
 
+	if path := desktopSection.Key("Path").String(); path != "" {
+		if err := os.Chdir(path); err != nil {
+			return fmt.Errorf("error starting application: error setting working directory '%s': %w", path, err)
+		}
+	}
+
 	env := os.Environ()
 
 	args := []string{sh, "-c", cmd}
