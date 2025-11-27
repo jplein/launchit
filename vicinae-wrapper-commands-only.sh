@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-"$(dirname "$0")/launchit" write --source commands --columns=name --widths=80 --icons=false | vicinae dmenu | "$(dirname "$0")/launchit" read
+"$(dirname "$0")/launchit" write --columns=name,type --widths=65,11 --icons=false | vicinae dmenu | "$(dirname "$0")/launchit" read
