@@ -49,6 +49,7 @@ func writeEntries(args []string) {
 	src := fs.String("source", "", "Source to pull entries from")
 	columns := fs.String("columns", "", "Comma-separated list of one or more of name,type. Default vaule is 'name'.")
 	widths := fs.String("widths", "", "Comma-separated list of lengths. Defaults to 0, or no specified width.")
+	icons := fs.Bool("icons", true, "Whether to include icons using the Rofi protocol. Default value is true.")
 
 	fs.Parse(args)
 
@@ -112,7 +113,7 @@ func writeEntries(args []string) {
 		os.Exit(1)
 	}
 
-	err = l.Write(os.Stdout, columnNames, widthInts)
+	err = l.Write(os.Stdout, columnNames, widthInts, icons)
 	if err != nil {
 		logger.Log("error writing entries: %v", err)
 		os.Exit(1)

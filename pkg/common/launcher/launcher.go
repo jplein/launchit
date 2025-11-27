@@ -60,14 +60,14 @@ func (l *Launcher) List() ([]source.Entry, error) {
 	return entries, nil
 }
 
-func (l *Launcher) Write(writer io.Writer, columns []string, widths []int) error {
+func (l *Launcher) Write(writer io.Writer, columns []string, widths []int, showIcons *bool) error {
 	entries, err := l.List()
 	if err != nil {
 		return err
 	}
 
 	for _, entry := range entries {
-		_, err := writer.Write([]byte(getLine(entry, columns, widths) + "\n"))
+		_, err := writer.Write([]byte(getLine(entry, columns, widths, showIcons) + "\n"))
 		if err != nil {
 			return fmt.Errorf("error writing entries: %w", err)
 		}
@@ -76,14 +76,14 @@ func (l *Launcher) Write(writer io.Writer, columns []string, widths []int) error
 	return nil
 }
 
-func getLine(entry source.Entry, columns []string, widths []int) string {
+func getLine(entry source.Entry, columns []string, widths []int, showIcons *bool) string {
 	str := fmt.Sprintf(
 		"%s\t%s",
 		getDescription(entry, columns, widths),
 		strings.ReplaceAll(entry.ID, "\t", "    "),
 	)
 
-	if entry.Icon != "" {
+	if entry.Icon != "" && *showIcons {
 		icon := strings.ReplaceAll(entry.Icon, "\t", "")
 		str += "\x00" + "icon" + "\x1f" + icon
 	}
