@@ -4,12 +4,32 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"time"
 
 	"github.com/jplein/launchit/pkg/common/state/locations"
 )
 
+var (
+	logFile     string
+	logFH       *os.File
+	subcommand  string
+	initialized bool
+)
+
+// Init initializes the logger with the specified subcommand.
+// This determines which log file to use (e.g., launchit-write.log, launchit-read.log).
+func Init(subcmd string) {
+	subcommand = subcmd
+	initialized = true
+}
+
 func Log(format string, a ...any) {
-	fmt.Fprintf(os.Stderr, format, a...)
+	// Add timestamp to the log message
+	timestamp := time.Now().Format("2006-01-02 15:04:05")
+	message := fmt.Sprintf(format, a...)
+	timestampedMessage := fmt.Sprintf("[%s] %s", timestamp, message)
+
+	fmt.Fprintf(os.Stderr, timestampedMessage)
 
 	fh, err := getLogFilehandle()
 	if err != nil {
@@ -17,26 +37,23 @@ func Log(format string, a ...any) {
 		return
 	}
 
-	fmt.Fprintf(fh, format, a...)
+	fmt.Fprintf(fh, timestampedMessage)
 }
-
-var (
-	logFile string
-	logFH   *os.File
-)
-
-const (
-	baseLogFilename = "launchit.log"
-)
 
 func getLogFile() (string, error) {
 	if logFile != "" {
 		return logFile, nil
 	}
 
-	logFile, err := locations.LogFilename()
+	var err error
+	if initialized && subcommand != "" {
+		logFile, err = locations.LogFilenameForSubcommand(subcommand)
+	} else {
+		logFile, err = locations.LogFilename()
+	}
+
 	if err != nil {
-		return "", fmt.Errorf("erorr getting log file: %w", err)
+		return "", fmt.Errorf("error getting log file: %w", err)
 	}
 
 	return logFile, nil
@@ -54,11 +71,11 @@ func getLogFilehandle() (*os.File, error) {
 
 	logDir := path.Dir(file)
 	if err = os.MkdirAll(logDir, 0o744); err != nil {
-		return nil, fmt.Errorf("error opening log file %s: erorr creating directory %s: %w",
+		return nil, fmt.Errorf("error opening log file %s: error creating directory %s: %w",
 			file, logDir, err)
 	}
 
-	fh, err := os.OpenFile(file, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0o644)
+	fh, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		return nil, err
 	}

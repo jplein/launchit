@@ -25,6 +25,7 @@ func main() {
 	args := os.Args[1:]
 
 	if len(args) == 0 {
+		logger.Init("write")
 		writeEntries(args)
 		return
 	}
@@ -33,6 +34,8 @@ func main() {
 	if len(args) >= 1 {
 		subcommand = args[0]
 	}
+
+	logger.Init(subcommand)
 
 	switch subcommand {
 	case "read":
