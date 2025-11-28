@@ -12,7 +12,7 @@ import (
 	"github.com/jplein/launchit/pkg/common/source/niri"
 )
 
-const defaultPort = "17324"
+const Port = "17324"
 
 type NiriEvent struct {
 	WindowFocusChanged *struct {
@@ -135,7 +135,7 @@ func Start() error {
 	http.HandleFunc("/api/v1/history", historyHandler)
 	http.HandleFunc("/api/v1/windows", windowsHandler)
 
-	addr := ":" + defaultPort
+	addr := ":" + Port
 	logger.Log("Starting server on %s\n", addr)
 
 	err = http.ListenAndServe(addr, nil)

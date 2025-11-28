@@ -4,11 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os/exec"
 	"strings"
 
 	"github.com/jplein/launchit/pkg/common/desktop"
 	"github.com/jplein/launchit/pkg/common/logger"
+	"github.com/jplein/launchit/pkg/common/server"
+	"github.com/jplein/launchit/pkg/common/source/niri"
 )
 
 type WindowList struct{}
@@ -19,42 +23,37 @@ const (
 	windowListPrefix     = "window"
 )
 
-type niriWindowDescription struct {
-	ID    int    `json:"id"`
-	Title string `json:"title"`
-	AppID string `json:"app_id"`
+func listFromServer() ([]niri.WindowDescription, error) {
+	url := fmt.Sprintf("http://127.0.0.1:%s/api/v1/windows", server.Port)
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("error getting windows from server: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("error getting windows from server: status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var windows []niri.WindowDescription
+	if err := json.NewDecoder(resp.Body).Decode(&windows); err != nil {
+		return nil, fmt.Errorf("error parsing windows JSON: %w", err)
+	}
+
+	return windows, nil
 }
 
 func (w *WindowList) List() ([]Entry, error) {
-	var stdout, stderr bytes.Buffer
-	cmd := exec.Command("niri", "msg", "--json", "windows")
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-
-	if err := cmd.Run(); err != nil {
-		if stdout.Len() > 0 {
-			logger.Log("niri windows stdout: %s\n", stdout.String())
+	// Try to get windows from the server first
+	windows, err := listFromServer()
+	if err != nil {
+		// If server is unavailable, fall back to direct niri command
+		logger.Log("error getting windows from server, falling back to direct niri command: %v\n", err)
+		windows, err = niri.ListWindows()
+		if err != nil {
+			return nil, err
 		}
-		if stderr.Len() > 0 {
-			logger.Log("niri windows stderr: %s\n", stderr.String())
-		}
-		return nil, fmt.Errorf("error getting windows from Niri: %w", err)
-	}
-
-	if stdout.Len() > 0 {
-		logger.Log("niri windows stdout: %s\n", stdout.String())
-	}
-	if stderr.Len() > 0 {
-		logger.Log("niri windows stderr: %s\n", stderr.String())
-	}
-
-	listBytes := stdout.Bytes()
-
-	windows := make([]niriWindowDescription, 0)
-	if err := json.Unmarshal(listBytes, &windows); err != nil {
-		logger.Log("niri window list JSON output:\n")
-		logger.Log(string(listBytes))
-		return nil, fmt.Errorf("error getting windows from Niri: error parsing JSON: %w", err)
 	}
 
 	entries := make([]Entry, 0)
