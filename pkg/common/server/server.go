@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os/exec"
+	"sort"
 	"sync"
 
 	"github.com/jplein/launchit/pkg/common/logger"
@@ -172,6 +173,40 @@ func windowsHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
 	}
+
+	// Get the window history (most recent at the end)
+	history := eventListener.WindowHistory()
+
+	// Create a map from window ID to its position in history
+	historyPos := make(map[uint64]int)
+	for i, id := range history {
+		historyPos[id] = i
+	}
+
+	// Sort windows: most recently focused first
+	sort.SliceStable(windows, func(i, j int) bool {
+		idI := uint64(windows[i].ID)
+		idJ := uint64(windows[j].ID)
+
+		posI, inHistoryI := historyPos[idI]
+		posJ, inHistoryJ := historyPos[idJ]
+
+		// If both are in history, sort by position (higher = more recent = comes first)
+		if inHistoryI && inHistoryJ {
+			return posI > posJ
+		}
+
+		// If only one is in history, it comes first
+		if inHistoryI {
+			return true
+		}
+		if inHistoryJ {
+			return false
+		}
+
+		// If neither is in history, maintain original order (stable sort handles this)
+		return false
+	})
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
