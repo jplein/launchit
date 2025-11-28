@@ -1,4 +1,4 @@
 .PHONY: launchit
 
 launchit: 
-	cd cmd && go build -o ../launchit
+	nix build && ln -s ./result/bin/launchit .
