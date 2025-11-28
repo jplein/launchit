@@ -37,5 +37,36 @@
           ];
         };
       };
+
+      # For Home Manager
+      homeManagerModules.default = { config, lib, pkgs, ... }: {
+        options.services.launchit = {
+          enable = lib.mkEnableOption "launchit server";
+        };
+
+        config = lib.mkIf config.services.launchit.enable {
+          home.packages = [
+            (pkgs.callPackage ./default.nix { })
+          ];
+
+          systemd.user.services.launchit = {
+            Unit = {
+              Description = "Launchit window tracking server";
+              After = [ "graphical-session.target" ];
+              PartOf = [ "graphical-session.target" ];
+            };
+
+            Service = {
+              ExecStart = "${pkgs.callPackage ./default.nix { }}/bin/launchit server";
+              Restart = "on-failure";
+              RestartSec = 5;
+            };
+
+            Install = {
+              WantedBy = [ "graphical-session.target" ];
+            };
+          };
+        };
+      };
     };
 }
