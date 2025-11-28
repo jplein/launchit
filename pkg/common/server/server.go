@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/jplein/launchit/pkg/common/logger"
+	"github.com/jplein/launchit/pkg/common/source/niri"
 )
 
 const defaultPort = "17324"
@@ -131,6 +132,7 @@ func Start() error {
 	http.HandleFunc("/api/v1/health", healthHandler)
 	http.HandleFunc("/api/v1/last-event", lastEventHandler)
 	http.HandleFunc("/api/v1/history", historyHandler)
+	http.HandleFunc("/api/v1/windows", windowsHandler)
 
 	addr := ":" + defaultPort
 	logger.Log("Starting server on %s\n", addr)
@@ -160,4 +162,18 @@ func historyHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(history)
+}
+
+func windowsHandler(w http.ResponseWriter, r *http.Request) {
+	windows, err := niri.ListWindows()
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(windows)
 }
