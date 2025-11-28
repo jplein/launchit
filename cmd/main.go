@@ -10,6 +10,7 @@ import (
 
 	"github.com/jplein/launchit/pkg/common/launcher"
 	"github.com/jplein/launchit/pkg/common/logger"
+	"github.com/jplein/launchit/pkg/common/server"
 	"github.com/jplein/launchit/pkg/common/source"
 	"github.com/jplein/launchit/pkg/common/state"
 )
@@ -38,6 +39,8 @@ func main() {
 		handleInput()
 	case "write":
 		writeEntries(args[1:])
+	case "server":
+		startServer()
 	default:
 		logger.Log("unknown subcommand: %s\n", subcommand)
 		os.Exit(1)
@@ -171,4 +174,12 @@ func readFromSTDIN() (string, error) {
 	}
 
 	return string(buf), nil
+}
+
+func startServer() {
+	err := server.Start()
+	if err != nil {
+		logger.Log("error starting server: %v\n", err)
+		os.Exit(1)
+	}
 }
