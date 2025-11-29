@@ -21,7 +21,7 @@ func NewLauncher(sources source.SourceSet) (Launcher, error) {
 	}, nil
 }
 
-func (l *Launcher) List() ([]source.Entry, error) {
+func (l *Launcher) List(sortRecent bool) ([]source.Entry, error) {
 	entries, err := l.sources.List()
 	if err != nil {
 		return nil, fmt.Errorf("error listing entries: %w", err)
@@ -32,7 +32,7 @@ func (l *Launcher) List() ([]source.Entry, error) {
 		logger.Log("error reading recents: %v", err)
 	}
 
-	if recents != nil {
+	if recents != nil && sortRecent {
 		slices.SortFunc(entries, func(a, b source.Entry) int {
 			indexA := slices.Index(recents, a.ID)
 			indexB := slices.Index(recents, b.ID)
@@ -60,8 +60,8 @@ func (l *Launcher) List() ([]source.Entry, error) {
 	return entries, nil
 }
 
-func (l *Launcher) Write(writer io.Writer, columns []string, widths []int, showIcons *bool) error {
-	entries, err := l.List()
+func (l *Launcher) Write(writer io.Writer, columns []string, widths []int, showIcons *bool, sortRecent *bool) error {
+	entries, err := l.List(*sortRecent)
 	if err != nil {
 		return err
 	}

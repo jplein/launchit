@@ -56,6 +56,7 @@ func writeEntries(args []string) {
 	columns := fs.String("columns", "", "Comma-separated list of one or more of name,type. Default vaule is 'name'.")
 	widths := fs.String("widths", "", "Comma-separated list of lengths. Defaults to 0, or no specified width.")
 	icons := fs.Bool("icons", true, "Whether to include icons using the Rofi protocol. Default value is true.")
+	sortRecent := fs.Bool("sort-by-most-recent", true, "Whether to sort by most recent. Default value is true.")
 
 	fs.Parse(args)
 
@@ -119,7 +120,7 @@ func writeEntries(args []string) {
 		os.Exit(1)
 	}
 
-	err = l.Write(os.Stdout, columnNames, widthInts, icons)
+	err = l.Write(os.Stdout, columnNames, widthInts, icons, sortRecent)
 	if err != nil {
 		logger.Log("error writing entries: %v", err)
 		os.Exit(1)
