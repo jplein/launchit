@@ -82,31 +82,41 @@ type NiriEventListener struct {
 }
 
 func (n *NiriEventListener) Listen() error {
-	cmd := exec.Command("niri", "msg", "-j", "event-stream")
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		return err
-	}
-
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-
 	go func() {
-		scanner := bufio.NewScanner(stdout)
-		for scanner.Scan() {
-			line := scanner.Text()
-			n.mu.Lock()
-			n.lastEvent = line
-			n.handleEvent(line)
-			n.mu.Unlock()
-		}
+		for {
+			cmd := exec.Command("niri", "msg", "-j", "event-stream")
+			stdout, err := cmd.StdoutPipe()
+			if err != nil {
+				logger.Log("error creating stdout pipe for niri event-stream: %v\n", err)
+				time.Sleep(time.Second)
+				continue
+			}
 
-		if err := scanner.Err(); err != nil {
-			logger.Log("error reading from niri event-stream: %v\n", err)
-		}
+			if err := cmd.Start(); err != nil {
+				logger.Log("error starting niri event-stream: %v\n", err)
+				time.Sleep(time.Second)
+				continue
+			}
 
-		cmd.Wait()
+			logger.Log("niri event-stream process started\n")
+
+			scanner := bufio.NewScanner(stdout)
+			for scanner.Scan() {
+				line := scanner.Text()
+				n.mu.Lock()
+				n.lastEvent = line
+				n.handleEvent(line)
+				n.mu.Unlock()
+			}
+
+			if err := scanner.Err(); err != nil {
+				logger.Log("error reading from niri event-stream: %v\n", err)
+			}
+
+			cmd.Wait()
+			logger.Log("niri event-stream process exited, restarting...\n")
+			time.Sleep(time.Second)
+		}
 	}()
 
 	return nil
