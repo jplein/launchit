@@ -6,11 +6,60 @@ import (
 	"net/http"
 	"os/exec"
 	"sync"
+	"time"
 
 	"github.com/jplein/launchit/pkg/common/logger"
 )
 
 const Port = "17324"
+
+const (
+	// Maximum number of requests allowed per minute for each handler
+	maxRequestsPerMinute = 60
+	// Time window for rate limiting
+	rateLimitWindow = time.Minute
+)
+
+// LoadShedder implements rate limiting using a ring buffer of timestamps
+type LoadShedder struct {
+	timestamps []time.Time
+	cursor     int
+	mu         sync.Mutex
+}
+
+// NewLoadShedder creates a new LoadShedder with the specified capacity
+func NewLoadShedder(capacity int) *LoadShedder {
+	return &LoadShedder{
+		timestamps: make([]time.Time, capacity),
+		cursor:     0,
+	}
+}
+
+// Allow checks if a request should be allowed based on rate limits
+// Returns true if the request should be served, false if it should be shed (429)
+func (ls *LoadShedder) Allow() bool {
+	ls.mu.Lock()
+	defer ls.mu.Unlock()
+
+	now := time.Now()
+
+	// Calculate the next position in the ring buffer
+	nextCursor := (ls.cursor + 1) % len(ls.timestamps)
+
+	// Check the timestamp at the next position
+	// If it's within the rate limit window, we've exceeded our limit
+	oldestAllowed := now.Add(-rateLimitWindow)
+	if !ls.timestamps[nextCursor].IsZero() && ls.timestamps[nextCursor].After(oldestAllowed) {
+		// Too many requests in the time window
+		return false
+	}
+
+	// Record this request and move the cursor
+	ls.timestamps[nextCursor] = now
+	ls.cursor = nextCursor
+
+	return true
+}
 
 type NiriEvent struct {
 	WindowFocusChanged *struct {
@@ -120,6 +169,8 @@ func (n *NiriEventListener) WindowHistory() []uint64 {
 }
 
 var eventListener *NiriEventListener
+var healthLoadShedder *LoadShedder
+var historyLoadShedder *LoadShedder
 
 func Start() error {
 	eventListener = &NiriEventListener{}
@@ -127,6 +178,10 @@ func Start() error {
 	if err != nil {
 		return err
 	}
+
+	// Initialize load shedders for each handler
+	healthLoadShedder = NewLoadShedder(maxRequestsPerMinute)
+	historyLoadShedder = NewLoadShedder(maxRequestsPerMinute)
 
 	http.HandleFunc("/api/v1/health", healthHandler)
 	http.HandleFunc("/api/v1/history", historyHandler)
@@ -143,11 +198,23 @@ func Start() error {
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
+	if !healthLoadShedder.Allow() {
+		w.WriteHeader(http.StatusTooManyRequests)
+		w.Write([]byte("Too Many Requests"))
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OK"))
 }
 
 func historyHandler(w http.ResponseWriter, r *http.Request) {
+	if !historyLoadShedder.Allow() {
+		w.WriteHeader(http.StatusTooManyRequests)
+		w.Write([]byte("Too Many Requests"))
+		return
+	}
+
 	history := eventListener.WindowHistory()
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
