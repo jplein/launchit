@@ -5,11 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"os/exec"
-	"sort"
 	"sync"
 
 	"github.com/jplein/launchit/pkg/common/logger"
-	"github.com/jplein/launchit/pkg/common/source/niri"
 )
 
 const Port = "17324"
@@ -29,9 +27,9 @@ type NiriEvent struct {
 }
 
 type NiriEventListener struct {
-	lastEvent      string
-	windowHistory  []uint64
-	mu             sync.RWMutex
+	lastEvent     string
+	windowHistory []uint64
+	mu            sync.RWMutex
 }
 
 func (n *NiriEventListener) Listen() error {
@@ -131,9 +129,7 @@ func Start() error {
 	}
 
 	http.HandleFunc("/api/v1/health", healthHandler)
-	http.HandleFunc("/api/v1/last-event", lastEventHandler)
 	http.HandleFunc("/api/v1/history", historyHandler)
-	http.HandleFunc("/api/v1/windows", windowsHandler)
 
 	addr := ":" + Port
 	logger.Log("Starting server on %s\n", addr)
@@ -151,64 +147,9 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("OK"))
 }
 
-func lastEventHandler(w http.ResponseWriter, r *http.Request) {
-	lastEvent := eventListener.LastEvent()
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(lastEvent))
-}
-
 func historyHandler(w http.ResponseWriter, r *http.Request) {
 	history := eventListener.WindowHistory()
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(history)
-}
-
-func windowsHandler(w http.ResponseWriter, r *http.Request) {
-	windows, err := niri.ListWindows()
-	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
-		return
-	}
-
-	// Get the window history (most recent at the end)
-	history := eventListener.WindowHistory()
-
-	// Create a map from window ID to its position in history
-	historyPos := make(map[uint64]int)
-	for i, id := range history {
-		historyPos[id] = i
-	}
-
-	// Sort windows: most recently focused first
-	sort.SliceStable(windows, func(i, j int) bool {
-		idI := uint64(windows[i].ID)
-		idJ := uint64(windows[j].ID)
-
-		posI, inHistoryI := historyPos[idI]
-		posJ, inHistoryJ := historyPos[idJ]
-
-		// If both are in history, sort by position (higher = more recent = comes first)
-		if inHistoryI && inHistoryJ {
-			return posI > posJ
-		}
-
-		// If only one is in history, it comes first
-		if inHistoryI {
-			return true
-		}
-		if inHistoryJ {
-			return false
-		}
-
-		// If neither is in history, maintain original order (stable sort handles this)
-		return false
-	})
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(windows)
 }
