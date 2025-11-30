@@ -56,7 +56,7 @@ func (a *Applications) Handle(entry Entry) error {
 
 	desktopFileEntry, err := ini.Load(filename)
 	if err != nil {
-		return fmt.Errorf("error parsing %s as an ini file: %w", err)
+		return fmt.Errorf("error parsing %s as an ini file: %w", filename, err)
 	}
 
 	desktopSection := desktopFileEntry.Section("Desktop Entry")

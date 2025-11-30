@@ -85,6 +85,7 @@ func (w *WindowList) List() ([]Entry, error) {
 			ID:          windowListPrefix + ":" + fmt.Sprintf("%d", window.ID),
 			Icon:        icon,
 			Type:        windowListSourceType,
+			Hidden:      window.AppID,
 		}
 		entries = append(entries, entry)
 	}

@@ -13,6 +13,7 @@ type Entry struct {
 	ID          string
 	Icon        string
 	Type        string
+	Hidden      string
 }
 
 // Read an entry from a string. The string should contain a line with fields
@@ -33,15 +34,16 @@ func EntryFromString(s string) (Entry, error) {
 	}
 
 	fields := strings.Split(firstLine, "\t")
+
 	if len(fields) == 1 {
 		return Entry{}, fmt.Errorf("error reading entry from string: line does not contain a tab delimiter")
 	}
 
-	if len(fields) > 2 {
+	if len(fields) > 3 {
 		return Entry{}, fmt.Errorf("error reading entry from string: line contains more than one tab-delimted field")
 	}
 
-	return Entry{Description: fields[0], ID: fields[1]}, nil
+	return Entry{Description: fields[0], ID: fields[1], Hidden: fields[2]}, nil
 }
 
 type Source interface {

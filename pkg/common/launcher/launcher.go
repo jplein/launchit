@@ -78,9 +78,10 @@ func (l *Launcher) Write(writer io.Writer, columns []string, widths []int, showI
 
 func getLine(entry source.Entry, columns []string, widths []int, showIcons *bool) string {
 	str := fmt.Sprintf(
-		"%s\t%s",
+		"%s\t%s\t%s",
 		getDescription(entry, columns, widths),
 		strings.ReplaceAll(entry.ID, "\t", "    "),
+		strings.ReplaceAll(entry.Hidden, "\t", "    "),
 	)
 
 	if entry.Icon != "" && *showIcons {
