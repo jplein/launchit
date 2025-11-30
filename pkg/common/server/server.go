@@ -83,18 +83,30 @@ type NiriEventListener struct {
 
 func (n *NiriEventListener) Listen() error {
 	go func() {
+		const (
+			initialBackoff = time.Second
+			maxBackoff     = 64 * time.Second
+			cooldownPeriod = 5 * time.Minute // Reset backoff if process runs this long
+		)
+
+		backoff := initialBackoff
+
 		for {
+			startTime := time.Now()
+
 			cmd := exec.Command("niri", "msg", "-j", "event-stream")
 			stdout, err := cmd.StdoutPipe()
 			if err != nil {
-				logger.Log("error creating stdout pipe for niri event-stream: %v\n", err)
-				time.Sleep(time.Second)
+				logger.Log("error creating stdout pipe for niri event-stream: %v, retrying in %v\n", err, backoff)
+				time.Sleep(backoff)
+				backoff = min(backoff*2, maxBackoff)
 				continue
 			}
 
 			if err := cmd.Start(); err != nil {
-				logger.Log("error starting niri event-stream: %v\n", err)
-				time.Sleep(time.Second)
+				logger.Log("error starting niri event-stream: %v, retrying in %v\n", err, backoff)
+				time.Sleep(backoff)
+				backoff = min(backoff*2, maxBackoff)
 				continue
 			}
 
@@ -114,8 +126,20 @@ func (n *NiriEventListener) Listen() error {
 			}
 
 			cmd.Wait()
-			logger.Log("niri event-stream process exited, restarting...\n")
-			time.Sleep(time.Second)
+
+			// Check how long the process ran
+			uptime := time.Since(startTime)
+			if uptime >= cooldownPeriod {
+				// Process ran successfully for the cooldown period, reset backoff
+				backoff = initialBackoff
+				logger.Log("niri event-stream process exited after %v, resetting backoff, restarting in %v\n", uptime.Round(time.Second), backoff)
+			} else {
+				// Process failed quickly, use exponential backoff
+				logger.Log("niri event-stream process exited after %v, restarting in %v\n", uptime.Round(time.Second), backoff)
+				backoff = min(backoff*2, maxBackoff)
+			}
+
+			time.Sleep(backoff)
 		}
 	}()
 
