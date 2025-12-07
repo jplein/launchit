@@ -16,8 +16,6 @@ import (
 	"github.com/jplein/launchit/pkg/common/source/niri"
 )
 
-type WindowList struct{}
-
 const (
 	windowListSourceName = "windows"
 	windowListSourceType = "Window"
@@ -83,6 +81,8 @@ func sortWindowsByHistory(windows []niri.WindowDescription, history []uint64) {
 	})
 
 }
+
+type WindowList struct{}
 
 func (w *WindowList) List() ([]Entry, error) {
 	history := []uint64{}
