@@ -16,6 +16,7 @@ const (
 	workspacePrefix       = "workspace"
 	workspaceSwitchSuffix = "switch"
 	workspaceMoveSuffix   = "move"
+	workspaceIcon         = "view-grid-symbolic-fill"
 )
 
 type Workspaces struct{}
@@ -33,6 +34,7 @@ func (w *Workspaces) List() ([]Entry, error) {
 			Description: fmt.Sprintf("Niri: Switch to workspace %d", workspace.Index),
 			ID:          fmt.Sprintf("%s:%d%s", workspacePrefix, workspace.Index, workspaceSwitchSuffix),
 			Type:        workspaceSourceType,
+			Icon:        workspaceIcon,
 		}
 
 		entries = append(entries, switchEntry)
@@ -41,6 +43,7 @@ func (w *Workspaces) List() ([]Entry, error) {
 			Description: fmt.Sprintf("Niri: Move active window to workspace %d", workspace.Index),
 			ID:          fmt.Sprintf("%s:%d%s", workspacePrefix, workspace.Index, workspaceMoveSuffix),
 			Type:        workspaceSourceType,
+			Icon:        workspaceIcon,
 		}
 
 		entries = append(entries, moveEntry)
