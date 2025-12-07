@@ -31,7 +31,7 @@ func (w *Workspaces) List() ([]Entry, error) {
 	for _, workspace := range workspaces {
 		switchEntry := Entry{
 			Description: fmt.Sprintf("Niri: Switch to workspace %d", workspace.Index),
-			ID:          fmt.Sprintf("%s:%d%s", workspacePrefix, workspace.ID, workspaceSwitchSuffix),
+			ID:          fmt.Sprintf("%s:%d%s", workspacePrefix, workspace.Index, workspaceSwitchSuffix),
 			Type:        workspaceSourceType,
 		}
 
@@ -39,7 +39,7 @@ func (w *Workspaces) List() ([]Entry, error) {
 
 		moveEntry := Entry{
 			Description: fmt.Sprintf("Niri: Move active window to workspace %d", workspace.Index),
-			ID:          fmt.Sprintf("%s:%d%s", workspacePrefix, workspace.ID, workspaceMoveSuffix),
+			ID:          fmt.Sprintf("%s:%d%s", workspacePrefix, workspace.Index, workspaceMoveSuffix),
 			Type:        workspaceSourceType,
 		}
 
@@ -80,6 +80,8 @@ func (w *Workspaces) Handle(entry Entry) error {
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
+
+	logger.Log("Workspaces -> Handle: about to run command %v", cmd)
 
 	if err := cmd.Run(); err != nil {
 		if stdout.Len() > 0 {
