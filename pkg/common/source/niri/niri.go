@@ -45,6 +45,7 @@ func ListWindows() ([]WindowDescription, error) {
 
 type WorkspaceDescription struct {
 	ID        int     `json:"id"`
+	Index     int     `json:"idx"`
 	Name      *string `json:"name"`
 	IsActive  bool    `json:"is_active"`
 	IsFocused bool    `json:"is_focused"`

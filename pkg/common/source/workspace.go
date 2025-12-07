@@ -30,7 +30,7 @@ func (w *Workspaces) List() ([]Entry, error) {
 
 	for _, workspace := range workspaces {
 		switchEntry := Entry{
-			Description: fmt.Sprintf("Niri: Switch to workspace %d", workspace.ID),
+			Description: fmt.Sprintf("Niri: Switch to workspace %d", workspace.Index),
 			ID:          fmt.Sprintf("%s:%d%s", workspacePrefix, workspace.ID, workspaceSwitchSuffix),
 			Type:        workspaceSourceType,
 		}
@@ -38,7 +38,7 @@ func (w *Workspaces) List() ([]Entry, error) {
 		entries = append(entries, switchEntry)
 
 		moveEntry := Entry{
-			Description: fmt.Sprintf("Niri: Move active window to workspace %d", workspace.ID),
+			Description: fmt.Sprintf("Niri: Move active window to workspace %d", workspace.Index),
 			ID:          fmt.Sprintf("%s:%d%s", workspacePrefix, workspace.ID, workspaceMoveSuffix),
 			Type:        workspaceSourceType,
 		}
