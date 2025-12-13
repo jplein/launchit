@@ -12,7 +12,7 @@ import (
 
 const (
 	workspaceSourceName   = "workspaces"
-	workspaceSourceType   = "workspace"
+	workspaceSourceType   = "Workspaces"
 	workspacePrefix       = "workspace"
 	workspaceSwitchSuffix = "switch"
 	workspaceMoveSuffix   = "move"
