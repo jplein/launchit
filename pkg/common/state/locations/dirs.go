@@ -8,8 +8,9 @@ import (
 
 const (
 	// relative to the home directory
-	defaultXDGDataHome = ".local/state"
-	appName            = "launchit"
+	defaultXDGDataHome   = ".local/state"
+	defaultXDGConfigHome = ".config"
+	appName              = "launchit"
 )
 
 func StateDirectory() (string, error) {
@@ -24,6 +25,20 @@ func StateDirectory() (string, error) {
 	}
 
 	return path.Join(xdgDataHome, appName), nil
+}
+
+func ConfigDirectory() (string, error) {
+	xdgConfigHome := os.Getenv("XDG_CONFIG_HOME")
+	if xdgConfigHome == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", fmt.Errorf("error getting config directory location: %s", err)
+		}
+
+		xdgConfigHome = path.Join(home, defaultXDGConfigHome)
+	}
+
+	return path.Join(xdgConfigHome, appName), nil
 }
 
 const (

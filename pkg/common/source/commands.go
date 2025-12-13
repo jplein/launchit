@@ -3,10 +3,14 @@ package source
 import (
 	"bytes"
 	_ "embed"
+	"errors"
 	"fmt"
+	"os"
 	"os/exec"
+	"path"
 
 	"github.com/jplein/launchit/pkg/common/logger"
+	"github.com/jplein/launchit/pkg/common/state/locations"
 	"go.yaml.in/yaml/v4"
 )
 
@@ -88,13 +92,42 @@ func (c *Commands) Prefix() string {
 	return commandPrefix
 }
 
+const (
+	configFile = "commands.yaml" // Relative to the config directory
+)
+
+var (
+	errCommandsFileNotFound = errors.New("commands file not found")
+)
+
+func (c *Commands) commandsFile() (string, error) {
+	configDir, err := locations.ConfigDirectory()
+	if err != nil {
+		return "", fmt.Errorf("error getting commands: error getting config directory: %w", err)
+	}
+
+	file := path.Join(configDir, configFile)
+
+	return file, nil
+}
+
 func (c *Commands) readCommands() error {
 	if c.commands != nil {
 		return nil
 	}
 
+	file, err := c.commandsFile()
+	if err != nil {
+		return err
+	}
+
+	buf, err := os.ReadFile(file)
+	if err != nil {
+		return fmt.Errorf("error reading commands: %w", err)
+	}
+
 	var yamlCommands []command
-	if err := yaml.Unmarshal(commands, &yamlCommands); err != nil {
+	if err := yaml.Unmarshal(buf, &yamlCommands); err != nil {
 		return fmt.Errorf("error reading commands from YAML: %w", err)
 	}
 

@@ -1,4 +1,4 @@
-# Definitions of commands to add to the menu
+# Example commands YAML file
 #
 # Each entry has these properties:
 # - id: A unique string to identify this command
@@ -8,107 +8,30 @@
 #   the working directory or environment variables in this file; if those are
 #   necessary, use a wrapper script.
 # - icon: The icon to use. If missing or empty, defaults to "system-run"
-#
-# The icons in this file that end in "-fill.svg" have had their fill color
-# rewritten by the "rewrite-svg-fill-color" tool in dotfiles, and are found in
-# ~/.local/share/icons/Adwaita.
 
-- id: "maximize-column"
-  description: "Niri: Maximize column"
-  executable: niri
-  args:
-    - msg
-    - action
-    - maximize-column
-  icon: view-fullscreen-symbolic-fill
-- id: "third-width"
-  description: "Niri: Size column to one third the width of the display"
-  executable: niri
-  args:
-    - msg
-    - action
-    - set-window-width
-    - "33%"
-  icon: sidebar-show-symbolic-fill
-- id: "half-width"
-  description: "Niri: Size column to half the width of the display"
-  executable: niri
-  args:
-    - msg
-    - action
-    - set-window-width
-    - "50%"
-  icon: view-dual-symbolic-fill
-- id: "two-thirds-width"
-  description: "Niri: Size column to two-thirds the width of the display"
-  executable: niri
-  args:
-    - msg
-    - action
-    - set-window-width
-    - "67%"
-  icon: sidebar-show-right-symbolic-fill
-- id: "overview"
-  description: "Niri: Open the overview"
-  executable: niri
-  args:
-    - msg
-    - action
-    - open-overview
-  icon: view-grid-symbolic-fill
-- id: "focus-workspace-up"
-  description: "Niri: Focus workspace up"
-  executable: niri
-  args:
-    - msg
-    - action
-    - focus-workspace-up
-  icon: go-up-symbolic-fill
-- id: "focus-workspace-down"
-  description: "Niri: Focus workspace down"
-  executable: niri
-  args:
-    - msg
-    - action
-    - focus-workspace-down
-  icon: go-down-symbolic-fill
-- id: "center-column"
-  description: "Niri: Center column"
-  executable: niri
-  args:
-    - msg
-    - action
-    - center-column 
-  icon: format-justify-center-symbolic-fill
-# - id: "switch-to-window"
-#   description: "Switch to window"
-#   # TODO: Find a way to avoid hard-coding this entire path
-#   executable: "/home/jplein/Git/jplein/launchit/launchit-wrapper-rofi-windows-only.sh"
-#   args: []
-#   icon: applications-system-symbolic-fill
 - id: "power-sleep"
   description: "Sleep"
   executable: "systemctl"
   args:
     - suspend
-  icon: system-shutdown-symbolic-fill
+  icon: system-shutdown-symbolic
 - id: "lock"
   description: "Lock screen"
   executable: "hyprlock"
   args: []
-  icon: applications-system-symbolic-fill
+  icon: applications-system-symbolic
 - id: "power-restart"
   description: "Restart"
   executable: "systemctl"
   args:
     - reboot
-  icon: system-reboot-symbolic-fill
+  icon: system-reboot-symbolic
 - id: "power-shutdown"
   description: "Shutdown"
   executable: "systemctl"
   args:
     - halt
-  icon: system-shutdown-symbolic-fill
+  icon: system-shutdown-symbolic
 - id: "logout"
   description: "Logout"
   executable: "niri"
@@ -116,4 +39,4 @@
     - msg
     - action
     - quit
-  icon: system-log-out-symbolic-fill
+  icon: system-log-out-symbolic
