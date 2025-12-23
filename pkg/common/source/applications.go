@@ -74,8 +74,19 @@ func (a *Applications) Handle(entry Entry) error {
 		return fmt.Errorf("error reading desktop entry from file %s: %w", filename, err)
 	}
 
-	if err = a.exec(app); err != nil {
-		return fmt.Errorf("error running application: %w", err)
+	windows, err := niri.ListWindows(true)
+	if err != nil {
+		logger.Log("error getting window list from Niri: %w", err)
+		windows = []niri.WindowDescription{}
+	}
+
+	window := getWindow(app, windows)
+	if window != nil {
+
+	} else {
+		if err = a.exec(app); err != nil {
+			return fmt.Errorf("error running application: %w", err)
+		}
 	}
 
 	return nil

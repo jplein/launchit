@@ -1,9 +1,8 @@
 package source
 
 import (
-	"bytes"
 	"fmt"
-	"os/exec"
+	"strconv"
 	"strings"
 
 	"github.com/jplein/launchit/pkg/common/desktop"
@@ -88,26 +87,15 @@ func (w *WindowList) Handle(entry Entry) error {
 		}
 	}
 
-	var stdout, stderr bytes.Buffer
-	cmd := exec.Command("niri", "msg", "action", "focus-window", "--id", windowId)
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-
-	if err := cmd.Run(); err != nil {
-		if stdout.Len() > 0 {
-			logger.Log("niri focus-window stdout: %s\n", stdout.String())
-		}
-		if stderr.Len() > 0 {
-			logger.Log("niri focus-window stderr: %s\n", stderr.String())
-		}
-		return fmt.Errorf("error switching to window %s: %w", windowId, err)
+	windowInt64, err := strconv.ParseInt(windowId, 10, 64)
+	if err != nil {
+		return fmt.Errorf("error focusing window: error reading window ID '%s' as integer: %w", windowId, err)
 	}
 
-	if stdout.Len() > 0 {
-		logger.Log("niri focus-window stdout: %s\n", stdout.String())
-	}
-	if stderr.Len() > 0 {
-		logger.Log("niri focus-window stderr: %s\n", stderr.String())
+	windowInt := int(windowInt64)
+
+	if err := niri.FocusWindow(windowInt); err != nil {
+		return fmt.Errorf("error switching to window %d: %w", windowInt, err)
 	}
 
 	return nil

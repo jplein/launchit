@@ -59,6 +59,34 @@ func ListWindows(sortWindows bool) ([]WindowDescription, error) {
 	return windows, nil
 }
 
+func FocusWindow(windowID int) error {
+	windowStr := fmt.Sprintf("%d", windowID)
+
+	var stdout, stderr bytes.Buffer
+	cmd := exec.Command("niri", "msg", "action", "focus-window", "--id", windowStr)
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		if stdout.Len() > 0 {
+			logger.Log("niri focus-window stdout: %s\n", stdout.String())
+		}
+		if stderr.Len() > 0 {
+			logger.Log("niri focus-window stderr: %s\n", stderr.String())
+		}
+		return fmt.Errorf("error switching to window %s: %w", windowID, err)
+	}
+
+	if stdout.Len() > 0 {
+		logger.Log("niri focus-window stdout: %s\n", stdout.String())
+	}
+	if stderr.Len() > 0 {
+		logger.Log("niri focus-window stderr: %s\n", stderr.String())
+	}
+
+	return nil
+}
+
 type WorkspaceDescription struct {
 	ID        int     `json:"id"`
 	Index     int     `json:"idx"`
