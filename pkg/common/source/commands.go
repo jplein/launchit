@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
 
 	"github.com/jplein/launchit/pkg/common/logger"
 	"github.com/jplein/launchit/pkg/common/state/locations"
@@ -88,17 +87,18 @@ func (c *Commands) Prefix() string {
 	return commandPrefix
 }
 
+//go:embed res/commands.yaml
+var commandsBuf []byte
+
 const (
 	configFile = "commands.yaml" // Relative to the config directory
 )
 
 func (c *Commands) commandsFile() (string, error) {
-	configDir, err := locations.ConfigDirectory()
+	file, err := locations.Initialize(locations.XDGConfigDir, configFile, commandsBuf, locations.DefaultFilePermission)
 	if err != nil {
-		return "", fmt.Errorf("error getting commands: error getting config directory: %w", err)
+		return "", fmt.Errorf("error getting commands file location: %w", err)
 	}
-
-	file := path.Join(configDir, configFile)
 
 	return file, nil
 }
