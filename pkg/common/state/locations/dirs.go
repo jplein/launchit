@@ -40,7 +40,3 @@ func ConfigDirectory() (string, error) {
 
 	return path.Join(xdgConfigHome, appName), nil
 }
-
-const (
-	baseLogFilename = "launchit.log"
-)

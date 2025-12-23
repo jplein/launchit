@@ -3,7 +3,9 @@ package overrides
 import (
 	_ "embed"
 	"fmt"
+	"os"
 
+	"github.com/jplein/launchit/pkg/common/state/locations"
 	"go.yaml.in/yaml/v4"
 )
 
@@ -22,10 +24,25 @@ type overridesDoc struct {
 //go:embed res/overrides.yaml
 var overridesBuf []byte
 
+const (
+	// Path to the overrides file, relative to the XDG config directory
+	overridesFile = "overrides.yaml"
+)
+
 func getOverrides() ([]Override, error) {
+	overridesPath, err := locations.Initialize(locations.XDGConfigDir, overridesFile, overridesBuf, locations.DefaultFilePermission)
+	if err != nil {
+		return nil, fmt.Errorf("error getting overrides: %w", err)
+	}
+
+	buf, err := os.ReadFile(overridesPath)
+	if err != nil {
+		return nil, fmt.Errorf("error getting overrides: error reading from %s: %w", overridesPath, err)
+	}
+
 	var doc overridesDoc
 
-	err := yaml.Unmarshal(overridesBuf, &doc)
+	err = yaml.Unmarshal(buf, &doc)
 	if err != nil {
 		return nil, fmt.Errorf("error reading overrides: error parsing YAML: %w", err)
 	}
