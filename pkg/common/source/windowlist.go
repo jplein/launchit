@@ -9,6 +9,7 @@ import (
 	"github.com/jplein/launchit/pkg/common/desktop"
 	"github.com/jplein/launchit/pkg/common/logger"
 	"github.com/jplein/launchit/pkg/common/niri"
+	"github.com/jplein/launchit/pkg/overrides"
 )
 
 const (
@@ -113,12 +114,12 @@ func (w *WindowList) Prefix() string {
 	return windowListPrefix
 }
 
-// TODO: This should be in a configuration file that can be edited without rebuilding the application
-var overrides = map[string]string{
-	"google-chrome": "com.google.Chrome",
-	"Code":          "vscode",
-}
-
 func getIconOverride(appID string) string {
-	return overrides[appID]
+	o, err := overrides.ByAppID(appID)
+	if err != nil {
+		logger.Log("error getting overrides for app ID %s: %w", appID, err)
+		return ""
+	}
+
+	return o.Icon
 }
