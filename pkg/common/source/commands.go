@@ -3,7 +3,6 @@ package source
 import (
 	"bytes"
 	_ "embed"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -28,9 +27,6 @@ type command struct {
 	Description string   `yaml:"description"`
 	Icon        string   `yaml:"icon"`
 }
-
-//go:embed res/commands.yaml
-var commands []byte
 
 type Commands struct {
 	commands []command
@@ -94,10 +90,6 @@ func (c *Commands) Prefix() string {
 
 const (
 	configFile = "commands.yaml" // Relative to the config directory
-)
-
-var (
-	errCommandsFileNotFound = errors.New("commands file not found")
 )
 
 func (c *Commands) commandsFile() (string, error) {
