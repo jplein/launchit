@@ -21,6 +21,8 @@ type App struct {
 	Name     string
 	ID       string
 	Filename string
+	Exec     string
+	Path     string
 }
 
 func List() ([]App, error) {
@@ -40,7 +42,7 @@ func List() ([]App, error) {
 		}
 
 		for _, file := range files {
-			app, err := getEntry(file)
+			app, err := FromFile(file)
 			if err != nil {
 				logger.Log("error reading desktop file %s: %v\n", file, err)
 				continue
@@ -57,7 +59,7 @@ func List() ([]App, error) {
 	return apps, nil
 }
 
-func Get(id string) (*App, error) {
+func FromID(id string) (*App, error) {
 	apps, err := List()
 	if err != nil {
 		return nil, err
@@ -72,7 +74,7 @@ func Get(id string) (*App, error) {
 	return nil, errors.New("no application with ID '" + id + "' found")
 }
 
-func getEntry(desktopFile string) (App, error) {
+func FromFile(desktopFile string) (App, error) {
 	desktopFileEntry, err := ini.Load(desktopFile)
 	if err != nil {
 		return App{}, fmt.Errorf("error reading from %s: %w", desktopFile, err)
@@ -90,6 +92,21 @@ func getEntry(desktopFile string) (App, error) {
 		icon = "application-x-executable"
 	}
 
+	cmd := desktopSection.Key("Exec").String()
+	if cmd == "" {
+		return App{}, fmt.Errorf("error getting command from %s: no Exec line found", desktopFile)
+	}
+
+	// Remove any positional arguments (like %U)
+	fieldCodes := []string{"%f", "%F", "%u", "%U", "%i", "%c", "%k", "%d", "%D", "%n", "%N", "%v", "%m"}
+	for _, code := range fieldCodes {
+		cmd = strings.ReplaceAll(cmd, code, "")
+	}
+
+	cmd = strings.TrimSpace(cmd)
+
+	chdir := desktopSection.Key("Path").String()
+
 	basename := strings.TrimSuffix(path.Base(desktopFile), ".desktop")
 
 	return App{
@@ -97,6 +114,8 @@ func getEntry(desktopFile string) (App, error) {
 		Name:     name,
 		Filename: desktopFile,
 		ID:       basename,
+		Exec:     cmd,
+		Path:     chdir,
 	}, nil
 }
 

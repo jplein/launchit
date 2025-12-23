@@ -8,7 +8,9 @@ import (
 	"syscall"
 
 	"github.com/jplein/launchit/pkg/common/desktop"
-	"gopkg.in/ini.v1"
+	"github.com/jplein/launchit/pkg/common/logger"
+	"github.com/jplein/launchit/pkg/common/niri"
+	"github.com/jplein/launchit/pkg/overrides"
 )
 
 type Applications struct{}
@@ -25,8 +27,21 @@ func (a *Applications) List() ([]Entry, error) {
 		return nil, fmt.Errorf("error listing applications: %w", err)
 	}
 
+	windows, err := niri.ListWindows(true)
+	if err != nil {
+		logger.Log("error collecting window list: %w", err)
+		windows = []niri.WindowDescription{}
+	}
+
 	entries := make([]Entry, 0)
 	for _, app := range apps {
+		desc := app.Name
+		window := getWindow(app, windows)
+
+		if window != nil {
+			desc = fmt.Sprintf("• %s", desc)
+		}
+
 		entry := Entry{
 			Description: app.Name,
 			Icon:        app.Icon,
@@ -54,39 +69,41 @@ func (a *Applications) Handle(entry Entry) error {
 		return fmt.Errorf("not a valid ID: filename is empty: %s", id)
 	}
 
-	desktopFileEntry, err := ini.Load(filename)
+	app, err := desktop.FromFile(filename)
 	if err != nil {
-		return fmt.Errorf("error parsing %s as an ini file: %w", filename, err)
+		return fmt.Errorf("error reading desktop entry from file %s: %w", filename, err)
 	}
 
-	desktopSection := desktopFileEntry.Section("Desktop Entry")
-
-	cmd := desktopSection.Key("Exec").String()
-	if cmd == "" {
-		return fmt.Errorf("error getting command from %s: no Exec line found", filename)
+	if err = a.exec(app); err != nil {
+		return fmt.Errorf("error running application: %w", err)
 	}
 
-	// Remove any positional arguments (like %U)
-	fieldCodes := []string{"%f", "%F", "%u", "%U", "%i", "%c", "%k", "%d", "%D", "%n", "%N", "%v", "%m"}
-	for _, code := range fieldCodes {
-		cmd = strings.ReplaceAll(cmd, code, "")
-	}
-	cmd = strings.TrimSpace(cmd)
+	return nil
+}
 
+func (a *Applications) Prefix() string {
+	return idPrefix
+}
+
+func (a *Applications) exec(app desktop.App) error {
 	sh, err := exec.LookPath("sh")
 	if err != nil {
 		return fmt.Errorf("error starting application: could not find sh in the PATH")
 	}
 
-	if path := desktopSection.Key("Path").String(); path != "" {
-		if err := os.Chdir(path); err != nil {
-			return fmt.Errorf("error starting application: error setting working directory '%s': %w", path, err)
+	if app.Exec == "" {
+		return fmt.Errorf("error starting application from file %s: Exec entry is missing or blank", app.Filename)
+	}
+
+	if app.Path != "" {
+		if err := os.Chdir(app.Path); err != nil {
+			return fmt.Errorf("error starting application: error setting working directory '%s': %w", app.Path, err)
 		}
 	}
 
 	env := os.Environ()
 
-	args := []string{sh, "-c", cmd}
+	args := []string{sh, "-c", app.Exec}
 	err = syscall.Exec(sh, args, env)
 	if err != nil {
 		return fmt.Errorf("error starting application: error executing %s with arguments %v: %w", sh, args, err)
@@ -95,6 +112,30 @@ func (a *Applications) Handle(entry Entry) error {
 	return nil
 }
 
-func (a *Applications) Prefix() string {
-	return idPrefix
+// Returns the most recently accessed open window for the application, or nil if
+// there is no such window
+//
+// entry: An application entry
+//
+// windows: The list of open windows, with the most recently accessed windows at
+// the beginning of the list, as returned by niri.ListWindows()
+func getWindow(app desktop.App, windows []niri.WindowDescription) *niri.WindowDescription {
+	id := app.ID
+
+	or, err := overrides.ByAppID(app.ID)
+	if err != nil {
+		logger.Log("error getting window ID for app %s: %w", app.ID, err)
+	}
+
+	if or != nil {
+		id = or.WindowAppID
+	}
+
+	for _, window := range windows {
+		if window.AppID == id {
+			return &window
+		}
+	}
+
+	return nil
 }

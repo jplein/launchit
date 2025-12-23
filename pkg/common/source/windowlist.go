@@ -40,7 +40,7 @@ func (w *WindowList) List() ([]Entry, error) {
 			appID = or.AppID
 		}
 
-		desktopEntry, err := desktop.Get(appID)
+		desktopEntry, err := desktop.FromID(appID)
 		if err != nil {
 			logger.Log("error getting desktop entry %s: %v\n", window.AppID, err)
 		}
