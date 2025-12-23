@@ -36,7 +36,7 @@ func Get() ([]string, error) {
 func Add(id string) error {
 	file, err := locations.RecentFilename()
 	if err != nil {
-		return fmt.Errorf("error adding '%s' to recent commands: %w", err)
+		return fmt.Errorf("error adding '%s' to recent commands: %w", id, err)
 	}
 
 	recent, err := Get()
