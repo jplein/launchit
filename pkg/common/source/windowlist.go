@@ -2,17 +2,12 @@ package source
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"os/exec"
-	"sort"
 	"strings"
 
 	"github.com/jplein/launchit/pkg/common/desktop"
 	"github.com/jplein/launchit/pkg/common/logger"
-	"github.com/jplein/launchit/pkg/common/server"
 	"github.com/jplein/launchit/pkg/common/source/niri"
 )
 
@@ -22,84 +17,13 @@ const (
 	windowListPrefix     = "window"
 )
 
-func historyFromServer() ([]uint64, error) {
-	url := fmt.Sprintf("http://127.0.0.1:%s/api/v1/history", server.Port)
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, fmt.Errorf("error reading from /api/v1/history: %w", err)
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("error reading from /api/v1/history: invalid status code %d, response body: %s", resp.StatusCode, string(body))
-	}
-
-	history := []uint64{}
-	if err := json.NewDecoder(resp.Body).Decode(&history); err != nil {
-		return nil, fmt.Errorf("error parsing history JSON: %w", err)
-	}
-
-	return history, nil
-}
-
-// Sort a list of window descriptions in place, with the most recent windows appearing first
-//
-// windows: A list of windows
-// history: A list of window IDs, ordered so that the most recent windows are at the end
-func sortWindowsByHistory(windows []niri.WindowDescription, history []uint64) {
-	// Create a map from window ID to its position in history
-	historyPos := make(map[uint64]int)
-	for i, id := range history {
-		historyPos[id] = i
-	}
-
-	// Sort windows: most recently focused first
-	sort.SliceStable(windows, func(i, j int) bool {
-		idI := uint64(windows[i].ID)
-		idJ := uint64(windows[j].ID)
-
-		posI, inHistoryI := historyPos[idI]
-		posJ, inHistoryJ := historyPos[idJ]
-
-		// If both are in history, sort by position (higher = more recent = comes first)
-		if inHistoryI && inHistoryJ {
-			return posI > posJ
-		}
-
-		// If only one is in history, it comes first
-		if inHistoryI {
-			return true
-		}
-		if inHistoryJ {
-			return false
-		}
-
-		// If neither is in history, maintain original order (stable sort handles this)
-		return false
-	})
-
-}
-
 type WindowList struct{}
 
 func (w *WindowList) List() ([]Entry, error) {
-	history := []uint64{}
-
-	serverHistory, err := historyFromServer()
+	windows, err := niri.ListWindows(true)
 	if err != nil {
-		logger.Log("error getting history from server: %v", err)
-	} else {
-		history = serverHistory
+		return nil, fmt.Errorf("error getting window list: %w", err)
 	}
-
-	windows, err := niri.ListWindows()
-	if err != nil {
-		return nil, fmt.Errorf("error getting window list from Niri: %w", err)
-	}
-
-	sortWindowsByHistory(windows, history)
 
 	entries := make([]Entry, 0)
 
