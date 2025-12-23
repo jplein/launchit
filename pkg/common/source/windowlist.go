@@ -121,5 +121,9 @@ func getIconOverride(appID string) string {
 		return ""
 	}
 
+	if o == nil {
+		return ""
+	}
+
 	return o.Icon
 }
