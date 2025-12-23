@@ -8,7 +8,7 @@ import (
 
 	"github.com/jplein/launchit/pkg/common/desktop"
 	"github.com/jplein/launchit/pkg/common/logger"
-	"github.com/jplein/launchit/pkg/common/source/niri"
+	"github.com/jplein/launchit/pkg/common/niri"
 )
 
 const (
