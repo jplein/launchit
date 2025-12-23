@@ -43,7 +43,7 @@ func (a *Applications) List() ([]Entry, error) {
 		}
 
 		entry := Entry{
-			Description: app.Name,
+			Description: desc,
 			Icon:        app.Icon,
 			ID:          idPrefix + ":" + app.Filename,
 			Type:        appSourceType,
