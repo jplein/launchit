@@ -45,15 +45,7 @@ func (w *WindowList) List() ([]Entry, error) {
 			logger.Log("error getting desktop entry %s: %v\n", window.AppID, err)
 		}
 
-		icon := ""
-		override := getIconOverride(window.AppID)
-
-		switch {
-		case override != "":
-			icon = override
-		case desktopEntry != nil:
-			icon = desktopEntry.Icon
-		}
+		icon := desktopEntry.Icon
 
 		// Attempt to get the name from the desktop entry, if we can find it. Otherwise, leave it blank.
 		name := window.AppID
@@ -123,18 +115,4 @@ func (w *WindowList) Handle(entry Entry) error {
 
 func (w *WindowList) Prefix() string {
 	return windowListPrefix
-}
-
-func getIconOverride(appID string) string {
-	o, err := overrides.ByAppID(appID)
-	if err != nil {
-		logger.Log("error getting overrides for app ID %s: %w", appID, err)
-		return ""
-	}
-
-	if o == nil {
-		return ""
-	}
-
-	return o.Icon
 }
