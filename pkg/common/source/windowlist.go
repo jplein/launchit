@@ -29,7 +29,18 @@ func (w *WindowList) List() ([]Entry, error) {
 	entries := make([]Entry, 0)
 
 	for _, window := range windows {
-		desktopEntry, err := desktop.Get(window.AppID)
+		appID := window.AppID
+
+		or, err := overrides.ByWindowAppID(appID)
+		if err != nil {
+			logger.Log("error reading overrides: %w", err)
+		}
+
+		if or != nil {
+			appID = or.AppID
+		}
+
+		desktopEntry, err := desktop.Get(appID)
 		if err != nil {
 			logger.Log("error getting desktop entry %s: %v\n", window.AppID, err)
 		}

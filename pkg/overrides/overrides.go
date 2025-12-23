@@ -8,9 +8,14 @@ import (
 )
 
 type Override struct {
-	Icon     string `yaml:"icon"`
-	AppID    string `yaml:"app-id"`
-	WindowID string `yaml:"window-id"`
+	// The name of the application icon
+	Icon string `yaml:"icon"`
+
+	// The application ID as the basename of the .desktop file
+	AppID string `yaml:"app-id"`
+
+	// The application ID as returned by Niri or another window manager for windows of this application
+	WindowAppID string `yaml:"window-app-id"`
 }
 
 type overridesDoc struct {
@@ -61,14 +66,14 @@ func ByAppID(appID string) (*Override, error) {
 	return nil, nil
 }
 
-func ByWindowID(windowID string) (*Override, error) {
+func ByWindowAppID(windowID string) (*Override, error) {
 	overrides, err := getOverrides()
 	if err != nil {
 		return nil, err
 	}
 
 	for _, o := range overrides {
-		if o.WindowID == windowID {
+		if o.WindowAppID == windowID {
 			return &o, nil
 		}
 	}
