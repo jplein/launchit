@@ -1,7 +1,3 @@
 overrides: 
-- icon: google-chrome
-  app-id: com.google.Chrome
-  window-app-id: google-chrome
-- icon: vscode
-  app-id: code
-  window-app-id: code
+  - app-id: com.google.Chrome
+    window-app-id: google-chrome

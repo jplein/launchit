@@ -8,10 +8,7 @@ import (
 )
 
 type Override struct {
-	// The name of the application icon
-	Icon string `yaml:"icon"`
-
-	// The application ID as the basename of the .desktop file
+	// The basename of the .desktop file
 	AppID string `yaml:"app-id"`
 
 	// The application ID as returned by Niri or another window manager for windows of this application
@@ -34,21 +31,6 @@ func getOverrides() ([]Override, error) {
 	}
 
 	return doc.Overrides, nil
-}
-
-func ByIcon(icon string) (*Override, error) {
-	overrides, err := getOverrides()
-	if err != nil {
-		return nil, err
-	}
-
-	for _, o := range overrides {
-		if o.Icon == icon {
-			return &o, nil
-		}
-	}
-
-	return nil, nil
 }
 
 func ByAppID(appID string) (*Override, error) {
