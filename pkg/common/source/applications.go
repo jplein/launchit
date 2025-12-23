@@ -82,7 +82,9 @@ func (a *Applications) Handle(entry Entry) error {
 
 	window := getWindow(app, windows)
 	if window != nil {
-
+		if err = niri.FocusWindow(window.ID); err != nil {
+			return fmt.Errorf("error switching to window with ID %d: %w", window.ID, err)
+		}
 	} else {
 		if err = a.exec(app); err != nil {
 			return fmt.Errorf("error running application: %w", err)
