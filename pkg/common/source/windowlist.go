@@ -32,7 +32,7 @@ func (w *WindowList) List() ([]Entry, error) {
 
 		or, err := overrides.ByWindowAppID(appID)
 		if err != nil {
-			logger.Log("error reading overrides: %w", err)
+			logger.Log("error reading overrides: %v", err)
 		}
 
 		if or != nil {
@@ -44,7 +44,12 @@ func (w *WindowList) List() ([]Entry, error) {
 			logger.Log("error getting desktop entry %s: %v\n", window.AppID, err)
 		}
 
-		icon := desktopEntry.Icon
+		var icon string
+		if desktopEntry != nil {
+			icon = desktopEntry.Icon
+		} else {
+			icon = "application-x-executable"
+		}
 
 		// Attempt to get the name from the desktop entry, if we can find it. Otherwise, leave it blank.
 		name := window.AppID
